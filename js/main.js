@@ -8,7 +8,7 @@ async function loadWorkoutList() {
 
     app.innerHTML = `
       <div class="p-8 max-w-4xl mx-auto text-center">
-        <h1 class="text-4xl md:text-6xl font-bold mb-4">Workout Power PoWA</h1>
+        <h1 class="text-4xl md:text-6xl font-bold mb-4">Workout Power PWA</h1>
         <p class="text-light mb-12 text-xl opacity-90">Choose a workout to begin</p>
         
         <div class="grid gap-8">
