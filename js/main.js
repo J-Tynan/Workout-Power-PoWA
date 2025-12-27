@@ -1,6 +1,10 @@
+// Main app entry point
+
 const app = document.getElementById('app');
 let currentWorkout = null;
+let currentFilename = null;  // Track filename for back navigation
 
+// History state management
 async function loadWorkoutList() {
   try {
     const response = await fetch('data/workouts/index.json');
@@ -8,26 +12,28 @@ async function loadWorkoutList() {
 
     app.innerHTML = `
       <div class="p-8 max-w-4xl mx-auto text-center">
-		<div class="flex justify-between items-center mb-8">
-		  <h1 class="text-4xl md:text-6xl font-bold">Workout Power PoWA</h1>
-		  <button onclick="loadOptions()" class="text-xl text-light underline">
-			Options ⚙️
-		  </button>
-		</div>
-		<p class="text-light text-xl opacity-90 text-center mb-12">Choose a workout to begin</p>
+        <div class="flex justify-between items-center mb-8">
+          <h1 class="text-4xl md:text-6xl font-bold">Workout Power PoWA</h1>
+          <button onclick="loadOptions()" class="text-xl text-light underline">
+            Options ⚙️
+          </button>
+        </div>
+        <p class="text-light text-xl opacity-90 text-center mb-12">Choose a workout to begin</p>
         
-        <div class="grid gap-8">
+        <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           ${workouts.map(w => `
             <button 
               onclick="loadWorkoutPreview('${w.filename}')"
-              class="bg-primary hover:bg-accent transition-all rounded-3xl p-10 shadow-2xl transform hover:scale-105">
-              <h2 class="text-3xl font-bold mb-3">${w.name}</h2>
-              <p class="text-light text-lg opacity-90">${w.description}</p>
+              class="bg-primary hover:bg-accent transition-all rounded-2xl p-6 shadow-xl hover:shadow-2xl">
+              <h2 class="text-2xl font-bold mb-2">${w.name}</h2>
+              <p class="text-light text-base opacity-90">${w.description}</p>
             </button>
           `).join('')}
         </div>
       </div>
     `;
+
+    history.replaceState({ view: 'menu' }, '', '#menu');
   } catch (err) {
     app.innerHTML = `<p class="text-red-400 p-8 text-center">Error loading workouts: ${err.message}</p>`;
   }
@@ -37,6 +43,7 @@ async function loadWorkoutPreview(filename) {
   try {
     const response = await fetch(`data/workouts/${filename}`);
     currentWorkout = await response.json();
+    currentFilename = filename;
 
     app.innerHTML = `
       <div class="flex flex-col h-full">
@@ -78,6 +85,8 @@ async function loadWorkoutPreview(filename) {
         </div>
       </div>
     `;
+
+    history.pushState({ view: 'preview', filename }, '', `#preview-${filename}`);
   } catch (err) {
     app.innerHTML = `<p class="text-red-400 p-8 text-center">Error loading workout: ${err.message}</p>`;
   }
@@ -88,12 +97,14 @@ function startTimer() {
     <div class="flex flex-col items-center justify-center h-full p-8 text-center">
       <h1 class="text-5xl md:text-7xl font-bold mb-8">Get Ready!</h1>
       <p class="text-3xl mb-8">Full timer with voice cues coming in the next update!</p>
-      <button onclick="loadWorkoutPreview('${currentWorkout?.id || 'quick-test'}.json')" 
+      <button onclick="loadWorkoutPreview('${currentFilename || 'quick-test.json'}')" 
               class="text-2xl text-light underline">
         ← Back to ${currentWorkout?.name || 'Workout'}
       </button>
     </div>
   `;
+
+  history.pushState({ view: 'timer', filename: currentFilename }, '', '#timer');
 }
 
 function loadOptions() {
@@ -108,19 +119,46 @@ function loadOptions() {
         <li>• Adjustable timers</li>
         <li>• Circuit repeats</li>
       </ul>
-      <button onclick="loadWorkoutPreview('${currentWorkout?.id || 'quick-test'}.json')" 
+      <button onclick="goBackFromOptions()" 
               class="mt-12 text-2xl text-light underline">
-        ← Back to Workout
+        ← Back
       </button>
     </div>
   `;
+
+  history.pushState({ view: 'options' }, '', '#options');
 }
 
-// Global functions
+// Helper to go back correctly from Options (returns to previous screen)
+function goBackFromOptions() {
+  if (currentWorkout) {
+    loadWorkoutPreview(currentFilename || 'quick-test.json');
+  } else {
+    loadWorkoutList();
+  }
+}
+
+// Handle browser back/forward buttons
+window.addEventListener('popstate', (event) => {
+  const state = event.state;
+
+  if (!state || state.view === 'menu') {
+    loadWorkoutList();
+  } else if (state.view === 'preview') {
+    loadWorkoutPreview(state.filename);
+  } else if (state.view === 'timer') {
+    startTimer();
+  } else if (state.view === 'options') {
+    loadOptions();
+  }
+});
+
+// Global functions for onclick
 window.loadWorkoutPreview = loadWorkoutPreview;
 window.startTimer = startTimer;
 window.loadOptions = loadOptions;
 window.loadWorkoutList = loadWorkoutList;
+window.goBackFromOptions = goBackFromOptions;
 
 // Initial load
 loadWorkoutList();
