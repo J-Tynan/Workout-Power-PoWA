@@ -1,4 +1,4 @@
-# Workout Power PoWA
+# [WIP] Workout Power PoWA
 
 A modern, open-source, installable Progressive Web App (PWA) revival of the famous **Scientific 7-Minute Workout** originally published by The New York Times and based on the 2013 ACSM paper.
 
@@ -6,7 +6,7 @@ This app delivers high-intensity circuit training (HICT) using only body weight,
 
 ## Features
 
-- **Multiple Workouts**  
+- **[WIP] Multiple Workouts**  
   - Classic Scientific 7-Minute Workout  
   - Advanced 7-Minute Workout  
   - Beginner / Low-Impact version  
@@ -42,5 +42,6 @@ TBC
 3. Launch the app — it will run in standalone mode and work offline.
 
 ## Development / Local Testing
+
 
 The app is pure static files — no build step required during early development.
