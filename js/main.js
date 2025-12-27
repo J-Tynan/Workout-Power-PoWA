@@ -13,7 +13,7 @@ async function loadWorkoutList() {
     app.innerHTML = `
       <div class="p-8 max-w-4xl mx-auto text-center">
         <div class="flex justify-between items-center mb-8">
-          <h1 class="text-4xl md:text-6xl font-bold">Workout Power PoWA</h1>
+          <h1 class="text-4xl md:text-6xl font-bold">Workout Power PWA</h1>
           <button onclick="loadOptions()" class="text-xl text-light underline">
             Options ⚙️
           </button>
