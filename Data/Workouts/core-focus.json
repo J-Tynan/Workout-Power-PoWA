@@ -1,0 +1,57 @@
+{
+  "id": "core-focus",
+  "name": "Core Focus",
+  "description": "4-exercise core strength test circuit.",
+  "defaultWorkSeconds": 30,
+  "defaultRestSeconds": 10,
+  "exercises": [
+    {
+      "id": "plank",
+      "name": "Plank",
+      "durationSeconds": 30,
+      "voiceCueStart": "Plank. Hold position.",
+      "voiceCueMid": "Engage your core",
+      "voiceCueCountdown": null,
+      "voiceCueNext": "Rest. Next up: Abdominal crunches",
+      "svgFrames": ["plank.svg"],
+      "animationSpeedMs": null,
+      "formTips": "Straight line from head to heels. Don't let hips sag."
+    },
+    {
+      "id": "crunches",
+      "name": "Abdominal Crunches",
+      "durationSeconds": 30,
+      "voiceCueStart": "Abdominal crunches. Go!",
+      "voiceCueMid": null,
+      "voiceCueCountdown": "Ten seconds left",
+      "voiceCueNext": "Rest. Next up: Side plank left",
+      "svgFrames": ["crunch_down.svg", "crunch_up.svg"],
+      "animationSpeedMs": 900,
+      "formTips": "Hands behind head or across chest. Lift shoulders off ground."
+    },
+    {
+      "id": "side-plank-left",
+      "name": "Side Plank (Left)",
+      "durationSeconds": 20,
+      "voiceCueStart": "Side plank left side. Hold.",
+      "voiceCueMid": null,
+      "voiceCueCountdown": null,
+      "voiceCueNext": "Rest. Next up: Side plank right",
+      "svgFrames": ["side_plank.svg"],
+      "animationSpeedMs": null,
+      "formTips": "Stack or stagger feet. Body in straight line."
+    },
+    {
+      "id": "side-plank-right",
+      "name": "Side Plank (Right)",
+      "durationSeconds": 20,
+      "voiceCueStart": "Side plank right side. Hold.",
+      "voiceCueMid": null,
+      "voiceCueCountdown": null,
+      "voiceCueNext": "Workout complete! Well done.",
+      "svgFrames": ["side_plank.svg"],
+      "animationSpeedMs": null,
+      "formTips": "Keep hips lifted. Avoid sinking."
+    }
+  ]
+}

@@ -1,0 +1,45 @@
+{
+  "id": "quick-test",
+  "name": "Quick Test Circuit",
+  "description": "Short 3-exercise circuit for testing the app flow.",
+  "defaultWorkSeconds": 30,
+  "defaultRestSeconds": 10,
+  "exercises": [
+    {
+      "id": "jumping-jacks",
+      "name": "Jumping Jacks",
+      "durationSeconds": 30,
+      "voiceCueStart": "Jumping jacks. Go!",
+      "voiceCueMid": "Keep those arms and legs moving!",
+      "voiceCueCountdown": "Ten seconds left",
+      "voiceCueNext": "Rest. Next up: Wall sit",
+      "svgFrames": ["jumping_jacks_closed.svg", "jumping_jacks_open.svg"],
+      "animationSpeedMs": 800,
+      "formTips": "Land softly on the balls of your feet. Full arm and leg extension."
+    },
+    {
+      "id": "wall-sit",
+      "name": "Wall Sit",
+      "durationSeconds": 30,
+      "voiceCueStart": "Wall sit. Slide down until thighs are parallel to the floor.",
+      "voiceCueMid": "Hold strong!",
+      "voiceCueCountdown": null,
+      "voiceCueNext": "Rest. Next up: Push-ups",
+      "svgFrames": ["wall_sit.svg"],
+      "animationSpeedMs": null,
+      "formTips": "Back flat against the wall. Knees directly over ankles."
+    },
+    {
+      "id": "push-ups",
+      "name": "Push-Ups",
+      "durationSeconds": 30,
+      "voiceCueStart": "Push-ups. Go!",
+      "voiceCueMid": null,
+      "voiceCueCountdown": "Ten seconds left",
+      "voiceCueNext": "Workout complete! Great job.",
+      "svgFrames": ["push_up_down.svg", "push_up_up.svg"],
+      "animationSpeedMs": 1000,
+      "formTips": "Keep body straight. Lower chest close to the floor."
+    }
+  ]
+}

@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Workout Power PoWA</title>
+  <meta name="description" content="A modern, open-source fitness PWA with 7-minute scientific workouts and more." />
+
+  <!-- PWA manifest and icons (we'll improve icons later) -->
+  <link rel="manifest" href="manifest.json" />
+  <link rel="apple-touch-icon" href="assets/icon-192.png" />
+  <meta name="theme-color" content="#0D2818" />
+
+  <!-- Tailwind CSS via CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            bg: '#0D2818',        // deep green background
+            primary: '#1B5E20',   // dark green
+            accent: '#4CAF50',    // brighter green
+            light: '#C8E6C9',
+          },
+          fontFamily: {
+            sans: ['system-ui', 'sans-serif'],
+          },
+        },
+      },
+    }
+  </script>
+
+  <style>
+    body { margin: 0; height: 100vh; overflow: hidden; }
+    #app { height: 100%; }
+  </style>
+</head>
+<body class="bg-bg text-white flex flex-col">
+  <div id="app" class="flex-1 flex flex-col"></div>
+
+  <!-- App modules -->
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>

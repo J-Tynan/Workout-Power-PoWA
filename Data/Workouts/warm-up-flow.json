@@ -1,0 +1,69 @@
+{
+  "id": "warm-up-flow",
+  "name": "Warm-Up Flow",
+  "description": "Gentle 5-exercise warm-up circuit.",
+  "defaultWorkSeconds": 30,
+  "defaultRestSeconds": 10,
+  "exercises": [
+    {
+      "id": "marching",
+      "name": "Marching in Place",
+      "durationSeconds": 30,
+      "voiceCueStart": "Marching in place. Begin.",
+      "voiceCueMid": null,
+      "voiceCueCountdown": "Ten seconds left",
+      "voiceCueNext": "Rest. Next up: Arm circles forward",
+      "svgFrames": ["marching_1.svg", "marching_2.svg"],
+      "animationSpeedMs": 700,
+      "formTips": "Lift knees high. Pump arms naturally."
+    },
+    {
+      "id": "arm-circles-forward",
+      "name": "Arm Circles Forward",
+      "durationSeconds": 20,
+      "voiceCueStart": "Arm circles forward. Go!",
+      "voiceCueMid": null,
+      "voiceCueCountdown": null,
+      "voiceCueNext": "Rest. Next up: Arm circles backward",
+      "svgFrames": ["arm_circle_forward_1.svg", "arm_circle_forward_2.svg"],
+      "animationSpeedMs": 600,
+      "formTips": "Big circles. Keep shoulders relaxed."
+    },
+    {
+      "id": "arm-circles-backward",
+      "name": "Arm Circles Backward",
+      "durationSeconds": 20,
+      "voiceCueStart": "Arm circles backward. Go!",
+      "voiceCueMid": null,
+      "voiceCueCountdown": null,
+      "voiceCueNext": "Rest. Next up: Bodyweight squats",
+      "svgFrames": ["arm_circle_backward_1.svg", "arm_circle_backward_2.svg"],
+      "animationSpeedMs": 600,
+      "formTips": "Reverse direction smoothly."
+    },
+    {
+      "id": "squats",
+      "name": "Bodyweight Squats",
+      "durationSeconds": 30,
+      "voiceCueStart": "Bodyweight squats. Go!",
+      "voiceCueMid": null,
+      "voiceCueCountdown": "Ten seconds left",
+      "voiceCueNext": "Rest. Next up: High knees",
+      "svgFrames": ["squat_down.svg", "squat_up.svg"],
+      "animationSpeedMs": 1000,
+      "formTips": "Knees track over toes. Chest up."
+    },
+    {
+      "id": "high-knees",
+      "name": "High Knees",
+      "durationSeconds": 30,
+      "voiceCueStart": "High knees. Begin!",
+      "voiceCueMid": null,
+      "voiceCueCountdown": "Ten seconds left",
+      "voiceCueNext": "Workout complete! You're warmed up.",
+      "svgFrames": ["high_knees_1.svg", "high_knees_2.svg"],
+      "animationSpeedMs": 500,
+      "formTips": "Drive knees up. Quick feet."
+    }
+  ]
+}

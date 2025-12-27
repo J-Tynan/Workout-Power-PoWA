@@ -1,0 +1,21 @@
+// src/data/workouts/index.json
+[
+  {
+    "id": "quick-test",
+    "name": "Quick Test Circuit",
+    "description": "Short 3-exercise circuit for testing the app flow.",
+    "filename": "quick-test.json"
+  },
+  {
+    "id": "core-focus",
+    "name": "Core Focus",
+    "description": "4-exercise core strength test circuit.",
+    "filename": "core-focus.json"
+  },
+  {
+    "id": "warm-up-flow",
+    "name": "Warm-Up Flow",
+    "description": "Gentle 5-exercise warm-up circuit.",
+    "filename": "warm-up-flow.json"
+  }
+]
