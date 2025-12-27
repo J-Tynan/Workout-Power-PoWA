@@ -1,4 +1,4 @@
-const CACHE_NAME = 'Workout-PoWA-Power-v1';
+const CACHE_NAME = 'Workout-PWA-Power-v1';
 const ASSETS = [
   './',
   'index.html',
