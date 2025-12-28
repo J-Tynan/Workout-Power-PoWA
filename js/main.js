@@ -257,16 +257,14 @@ function loadOptions() {
       document.documentElement.classList.add('light-theme');
     }
 
-    // Always update color controls to reflect saved value
+    // Always update color controls to reflect saved value (no custom picker)
     const accentColor = settings.lightColor || '#10B981';
     const preset = document.getElementById('light-color-preset');
     if (['#10B981', '#3B82F6', '#8B5CF6', '#F59E0B'].includes(accentColor)) {
       preset.value = accentColor;
-      document.getElementById('custom-color-wrapper').classList.add('hidden');
     } else {
-      preset.value = 'custom';
-      document.getElementById('custom-color-wrapper').classList.remove('hidden');
-      document.getElementById('custom-color-picker').value = accentColor;
+      // If a saved color isn't one of the presets, fall back to default preset
+      preset.value = '#10B981';
     }
   }
 
@@ -286,23 +284,10 @@ function loadOptions() {
     });
   });
 
-  // Light color preset
+  // Light color preset (no custom picker)
   const presetSelect = document.getElementById('light-color-preset');
   presetSelect.addEventListener('change', () => {
-    if (presetSelect.value === 'custom') {
-      document.getElementById('custom-color-wrapper').classList.remove('hidden');
-      document.getElementById('custom-color-picker').click();
-    } else {
-      settings.lightColor = presetSelect.value;
-      saveSettings();
-      applyTheme();
-    }
-  });
-
-  // Custom color picker
-  const customPicker = document.getElementById('custom-color-picker');
-  customPicker.addEventListener('input', () => {
-    settings.lightColor = customPicker.value;
+    settings.lightColor = presetSelect.value;
     saveSettings();
     applyTheme();
   });
