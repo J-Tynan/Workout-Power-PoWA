@@ -196,6 +196,62 @@ function loadOptions() {
 
   // === Interactive Wiring ===
   
+  // === Persistence with localStorage ===
+
+  const SETTINGS_KEY = 'workoutPowerSettings';
+
+  // Load saved settings on page load
+  const saved = localStorage.getItem(SETTINGS_KEY);
+  if (saved) {
+    const settings = JSON.parse(saved);
+
+    if (settings.voiceVolume !== undefined) {
+      voiceSlider.value = settings.voiceVolume;
+      voiceValue.textContent = `${settings.voiceVolume}%`;
+    }
+    if (settings.beepVolume !== undefined) {
+      beepSlider.value = settings.beepVolume;
+      beepValue.textContent = `${settings.beepVolume}%`;
+    }
+    if (settings.vibration !== undefined) {
+      document.getElementById('toggle-vibration').checked = settings.vibration;
+    }
+    if (settings.wakelock !== undefined) {
+      document.getElementById('toggle-wakelock').checked = settings.wakelock;
+    }
+    if (settings.sounds !== undefined) {
+      document.getElementById('toggle-sounds').checked = settings.sounds;
+    }
+  }
+
+  // Save settings whenever anything changes
+  function saveSettings() {
+    const settings = {
+      voiceVolume: parseInt(voiceSlider.value),
+      beepVolume: parseInt(beepSlider.value),
+      vibration: document.getElementById('toggle-vibration').checked,
+      wakelock: document.getElementById('toggle-wakelock').checked,
+      sounds: document.getElementById('toggle-sounds').checked,
+      // Add more later: theme, voiceStyle, etc.
+    };
+    localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
+  }
+
+  // Attach save on change
+  voiceSlider.addEventListener('input', () => {
+    voiceValue.textContent = `${voiceSlider.value}%`;
+    saveSettings();
+  });
+
+  beepSlider.addEventListener('input', () => {
+    beepValue.textContent = `${beepSlider.value}%`;
+    saveSettings();
+  });
+
+  document.getElementById('toggle-vibration').addEventListener('change', saveSettings);
+  document.getElementById('toggle-wakelock').addEventListener('change', saveSettings);
+  document.getElementById('toggle-sounds').addEventListener('change', saveSettings);
+
   // Volume sliders - update percentage display live
   const voiceSlider = document.getElementById('voice-volume-slider');
   const voiceValue = document.getElementById('voice-volume-value');
