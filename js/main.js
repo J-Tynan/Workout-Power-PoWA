@@ -15,7 +15,7 @@ async function loadWorkoutList() {
         <div class="flex justify-between items-center mb-8">
           <h1 class="text-4xl md:text-6xl font-bold">Workout Power PWA</h1>
           <button onclick="loadOptions()" class="text-xl text-light underline">
-            Options ⚙️
+            Options
           </button>
         </div>
         <p class="text-light text-xl opacity-90 text-center mb-12">Choose a workout to begin</p>
@@ -54,7 +54,7 @@ async function loadWorkoutPreview(filename) {
           </button>
           <h1 class="text-2xl md:text-3xl font-bold">${currentWorkout.name}</h1>
           <button onclick="loadOptions()" class="text-light underline text-lg">
-            Options ⚙️
+            Options
           </button>
         </div>
 
