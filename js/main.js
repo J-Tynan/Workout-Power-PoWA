@@ -352,9 +352,9 @@ function loadOptions() {
   // Load saved non-theme settings
   if (saved) {
     const loaded = JSON.parse(saved);
-    voiceSlider.value = loaded.voiceVolume ?? 80;
+    voiceSlider.value = loaded.voiceVolume ?? 100;
     voiceValue.textContent = `${voiceSlider.value}%`;
-    beepSlider.value = loaded.beepVolume ?? 60;
+    beepSlider.value = loaded.beepVolume ?? 100;
     beepValue.textContent = `${beepSlider.value}%`;
     document.getElementById('toggle-vibration').checked = loaded.vibration ?? true;
     document.getElementById('toggle-wakelock').checked = loaded.wakelock ?? true;
