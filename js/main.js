@@ -109,20 +109,104 @@ function startTimer() {
 
 function loadOptions() {
   app.innerHTML = `
-    <div class="p-8 max-w-2xl mx-auto text-center">
-      <h1 class="text-4xl md:text-5xl font-bold mb-8">Options ⚙️</h1>
-      <p class="text-xl text-light mb-8">Settings coming soon:</p>
-      <ul class="text-left text-lg space-y-4 max-w-md mx-auto">
-        <li>• Voice volume & style</li>
-        <li>• Beep sounds on/off</li>
-        <li>• Dark/light mode</li>
-        <li>• Adjustable timers</li>
-        <li>• Circuit repeats</li>
-      </ul>
-      <button onclick="goBackFromOptions()" 
-              class="mt-12 text-2xl text-light underline">
-        ← Back
-      </button>
+    <div class="p-8 max-w-3xl mx-auto text-center h-full flex flex-col">
+      <div class="flex justify-between items-center mb-10">
+        <button onclick="goBackFromOptions()" class="text-light text-lg underline">
+          ← Back
+        </button>
+        <h1 class="text-4xl md:text-5xl font-bold">Options ⚙️</h1>
+        <div class="w-20"></div> <!-- spacer for centering title -->
+      </div>
+
+      <div class="flex-1 overflow-y-auto space-y-10 pb-8">
+        <!-- Voice Volume Slider -->
+        <div class="bg-primary/30 rounded-3xl p-8 shadow-xl">
+          <h2 class="text-2xl font-bold mb-6">Voice Volume</h2>
+          <div class="flex items-center justify-between mb-2">
+            <label class="text-lg">Guidance Voice</label>
+            <span class="text-xl font-mono bg-bg px-4 py-2 rounded-lg">80%</span>
+          </div>
+          <input type="range" min="0" max="100" value="80" class="w-full h-4 bg-gray-700 rounded-full appearance-none cursor-pointer slider" />
+
+          <div class="flex items-center justify-between mt-8 mb-2">
+            <label class="text-lg">Countdown Beeps</label>
+            <span class="text-xl font-mono bg-bg px-4 py-2 rounded-lg">60%</span>
+          </div>
+          <input type="range" min="0" max="100" value="60" class="w-full h-4 bg-gray-700 rounded-full appearance-none cursor-pointer slider" />
+        </div>
+
+        <!-- Toggles (On/Off Switches) -->
+        <div class="bg-primary/30 rounded-3xl p-8 shadow-xl">
+          <h2 class="text-2xl font-bold mb-6">Features</h2>
+          
+          <label class="flex items-center justify-between mb-6 cursor-pointer">
+            <span class="text-lg">Vibration on Rest/Start</span>
+            <div class="relative">
+              <input type="checkbox" checked class="sr-only" />
+              <div class="w-14 h-8 bg-accent rounded-full shadow-inner"></div>
+              <div class="dot absolute w-6 h-6 bg-bg rounded-full shadow top-1 left-1 transition"></div>
+            </div>
+          </label>
+
+          <label class="flex items-center justify-between mb-6 cursor-pointer">
+            <span class="text-lg">Screen Wake Lock (keep screen on)</span>
+            <div class="relative">
+              <input type="checkbox" checked class="sr-only" />
+              <div class="w-14 h-8 bg-accent rounded-full shadow-inner"></div>
+              <div class="dot absolute w-6 h-6 bg-bg rounded-full shadow top-1 left-1 transition"></div>
+            </div>
+          </label>
+
+          <label class="flex items-center justify-between cursor-pointer">
+            <span class="text-lg">Sound Effects (beeps, chimes)</span>
+            <div class="relative">
+              <input type="checkbox" class="sr-only" />
+              <div class="w-14 h-8 bg-gray-600 rounded-full shadow-inner"></div>
+              <div class="dot absolute w-6 h-6 bg-bg rounded-full shadow top-1 left-8 transition"></div>
+            </div>
+          </label>
+        </div>
+
+        <!-- Radio Buttons: Theme Selection -->
+        <div class="bg-primary/30 rounded-3xl p-8 shadow-xl">
+          <h2 class="text-2xl font-bold mb-6">Theme</h2>
+          
+          <label class="flex items-center mb-5 cursor-pointer">
+            <input type="radio" name="theme" checked class="mr-4 w-6 h-6 text-accent" />
+            <span class="text-lg">Dark (Default)</span>
+          </label>
+          
+          <label class="flex items-center mb-5 cursor-pointer">
+            <input type="radio" name="theme" class="mr-4 w-6 h-6 text-accent" />
+            <span class="text-lg">Light</span>
+          </label>
+          
+          <label class="flex items-center cursor-pointer">
+            <input type="radio" name="theme" class="mr-4 w-6 h-6 text-accent" />
+            <span class="text-lg">High Contrast</span>
+          </label>
+        </div>
+
+        <!-- Radio Buttons: Voice Style -->
+        <div class="bg-primary/30 rounded-3xl p-8 shadow-xl">
+          <h2 class="text-2xl font-bold mb-6">Voice Style</h2>
+          
+          <label class="flex items-center mb-5 cursor-pointer">
+            <input type="radio" name="voice" checked class="mr-4 w-6 h-6 text-accent" />
+            <span class="text-lg">Natural (Default)</span>
+          </label>
+          
+          <label class="flex items-center mb-5 cursor-pointer">
+            <input type="radio" name="voice" class="mr-4 w-6 h-6 text-accent" />
+            <span class="text-lg">Motivational Coach</span>
+          </label>
+          
+          <label class="flex items-center cursor-pointer">
+            <input type="radio" name="voice" class="mr-4 w-6 h-6 text-accent" />
+            <span class="text-lg">Calm & Gentle</span>
+          </label>
+        </div>
+      </div>
     </div>
   `;
 
