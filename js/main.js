@@ -139,8 +139,8 @@ function loadOptions() {
           </label>
         </div>
 
-        <!-- Light Theme Color Picker (shown only when Light is selected) -->
-        <div id="light-theme-colors" class="bg-primary/30 rounded-3xl p-8 shadow-xl hidden">
+        <!-- Light Theme Accent Color - Always Visible -->
+        <div class="bg-primary/30 rounded-3xl p-8 shadow-xl">
           <h2 class="text-2xl font-bold mb-6">Light Theme Accent Color</h2>
           
           <select id="light-color-preset" class="w-full p-4 rounded-xl text-bg text-lg mb-6">
@@ -155,7 +155,7 @@ function loadOptions() {
             <input type="color" id="custom-color-picker" class="w-32 h-32 rounded-xl cursor-pointer" />
           </div>
 
-          <p class="text-sm opacity-80">Changes apply instantly and are saved automatically.</p>
+          <p class="text-sm opacity-80">Changes apply instantly when in Light mode and are saved automatically.</p>
         </div>
 
         <!-- Volume Sliders -->
@@ -240,46 +240,49 @@ function loadOptions() {
 
   // Apply theme
   function applyTheme() {
-    let theme = settings.theme || 'system';
-
-    // Resolve system preference
-    if (theme === 'system') {
-      theme = prefersDark ? 'dark' : 'light';
+    let effectiveTheme = settings.theme || 'system';
+    if (effectiveTheme === 'system') {
+      effectiveTheme = prefersDark ? 'dark' : 'light';
     }
 
+    // Update radio buttons to show saved choice (not effective)
     document.querySelectorAll('input[name="theme"]').forEach(r => {
       r.checked = r.value === (settings.theme || 'system');
     });
 
-    if (theme === 'dark') {
+    if (effectiveTheme === 'dark') {
       Object.entries(darkColors).forEach(([key, val]) => root.style.setProperty(key, val));
-      document.getElementById('light-theme-colors').classList.add('hidden');
       document.documentElement.classList.remove('light-theme');
-    } else if (theme === 'light') {
+    } else if (effectiveTheme === 'light') {
       const accentColor = settings.lightColor || '#10B981';
       root.style.setProperty('--bg', '#F0FDF4');
       root.style.setProperty('--primary', accentColor);
       root.style.setProperty('--accent', accentColor);
       root.style.setProperty('--light', '#1F2937');
-      document.getElementById('light-theme-colors').classList.remove('hidden');
       document.documentElement.classList.add('light-theme');
+    }
 
-      // Update color controls
-      const preset = document.getElementById('light-color-preset');
-      if (['#10B981', '#3B82F6', '#8B5CF6', '#F59E0B'].includes(accentColor)) {
-        preset.value = accentColor;
-        document.getElementById('custom-color-wrapper').classList.add('hidden');
-      } else {
-        preset.value = 'custom';
-        document.getElementById('custom-color-wrapper').classList.remove('hidden');
-        document.getElementById('custom-color-picker').value = accentColor;
-      }
+    // Always update color controls to reflect saved value
+    const accentColor = settings.lightColor || '#10B981';
+    const preset = document.getElementById('light-color-preset');
+    if (['#10B981', '#3B82F6', '#8B5CF6', '#F59E0B'].includes(accentColor)) {
+      preset.value = accentColor;
+      document.getElementById('custom-color-wrapper').classList.add('hidden');
+    } else {
+      preset.value = 'custom';
+      document.getElementById('custom-color-wrapper').classList.remove('hidden');
+      document.getElementById('custom-color-picker').value = accentColor;
     }
   }
 
   applyTheme();
 
-  // Theme change
+  // Listen for system theme changes
+  if (window.matchMedia) {
+    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', applyTheme);
+  }
+
+  // Theme radio change
   document.querySelectorAll('input[name="theme"]').forEach(radio => {
     radio.addEventListener('change', () => {
       settings.theme = radio.value;
@@ -343,7 +346,7 @@ function loadOptions() {
       sounds: document.getElementById('toggle-sounds').checked
     };
     localStorage.setItem(SETTINGS_KEY, JSON.stringify(currentSettings));
-    settings = currentSettings; // update local copy
+    settings = currentSettings;
   }
 
   // Load saved non-theme settings
