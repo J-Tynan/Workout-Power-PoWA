@@ -228,19 +228,16 @@ function loadOptions() {
         <!-- Volume Sliders -->
         <div class="bg-primary/30 rounded-3xl p-4 shadow-xl">
           <h2 class="text-2xl font-bold mb-2">Volume Controls</h2>
-          
-          <div class="mb-4">
-            <div class="flex items-center justify-between mb-2">        
-              <label class="flex items-center justify-between cursor-pointer">
-                <span class="text-lg">Sound Effects</span>
-                <div class="relative">
-                  <input type="checkbox" id="toggle-sounds" class="sr-only peer" aria-label="Sound Effects" />
-                  <div class="w-14 h-8 bg-gray-600 peer-checked:bg-accent rounded-full shadow-inner transition"></div>
-                  <div class="dot absolute w-6 h-6 bg-bg rounded-full shadow top-1 left-1 peer-checked:translate-x-6 transition"></div>
-                </div>
-              </label>
-          </div>
 
+          <label class="flex items-center justify-between mb-6 cursor-pointer">
+            <span class="text-lg">Sound Effects</span>
+            <div class="relative">
+              <input type="checkbox" id="toggle-sounds" class="sr-only peer" aria-label="Sound Effects" />
+              <div class="w-14 h-8 bg-gray-600 peer-checked:bg-accent rounded-full shadow-inner transition"></div>
+              <div class="dot absolute w-6 h-6 bg-bg rounded-full shadow top-1 left-1 peer-checked:translate-x-6 transition"></div>
+            </div>
+          </label>
+          
           <div class="mb-4">
             <div class="flex items-center justify-between mb-2">
               <label class="text-lg" for="voice-volume-slider">Guidance Voice</label>
