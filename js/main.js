@@ -110,12 +110,11 @@ async function loadWorkoutPreview(filename) {
 
     // Render carousel
     const carousel = document.getElementById('carousel-list');
-    // Start button
-    const startDiv = document.createElement('div');
-    startDiv.className = 'bg-accent rounded-2xl p-6 min-w-80 max-w-sm shadow-2xl flex items-center justify-center';
+    // Start button (entire card is a button for larger clickable area)
     const startBtn = document.createElement('button');
-    // Use stacked spans so label breaks to multiple lines and remains accessible
-    startBtn.className = 'text-4xl font-bold text-bg text-center';
+    startBtn.type = 'button';
+    // Add hover/focus affordances: subtle scale and stronger shadow, and accessible focus ring
+    startBtn.className = 'bg-accent rounded-2xl p-6 min-w-80 max-w-sm shadow-2xl flex items-center justify-center text-4xl font-bold text-bg text-center transition-transform transform hover:scale-105 hover:shadow-2xl focus:outline-none focus:ring-4 focus:ring-accent/30';
     startBtn.setAttribute('aria-label', 'Start Workout');
     const startLine1 = document.createElement('span');
     startLine1.className = 'block';
@@ -126,8 +125,7 @@ async function loadWorkoutPreview(filename) {
     startBtn.appendChild(startLine1);
     startBtn.appendChild(startLine2);
     startBtn.addEventListener('click', () => window.WorkoutApp.startTimer());
-    startDiv.appendChild(startBtn);
-    carousel.appendChild(startDiv);
+    carousel.appendChild(startBtn);
 
     // Exercises + Rest cards
     currentWorkout.exercises.forEach((ex, index) => {
