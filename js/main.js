@@ -87,7 +87,7 @@ async function loadWorkoutPreview(filename) {
             Options
           </button>
         </div>
-2
+
         <!-- Carousel with Rest indicators -->
         <div class="flex-1 overflow-x-auto px-4 py-4">
           <div class="flex gap-6 pb-4" style="width: max-content;" id="carousel-list"></div>
