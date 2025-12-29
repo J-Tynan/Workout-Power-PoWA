@@ -205,7 +205,7 @@ async function loadWorkoutPreview(filename) {
 
 function loadOptions() {
   app.innerHTML = `
-    <div class="p-8 max-w-3xl mx-auto text-center h-full flex flex-col">
+    <div class="p-4 max-w-3xl mx-auto text-center h-full flex flex-col">
       <div class="flex justify-between items-center mb-10">
         <button id="back-btn" class="text-light text-lg underline" aria-label="Back">
           ← Back
@@ -216,7 +216,7 @@ function loadOptions() {
 
       <div class="flex-1 overflow-y-auto space-y-10 pb-8">
         <!-- Rest Duration -->
-        <div class="bg-primary/30 rounded-3xl p-8 shadow-xl">
+        <div class="bg-primary/30 rounded-3xl p-4 shadow-xl">
           <h2 class="text-2xl font-bold mb-6">Rest Between Exercises</h2>
           <div class="flex items-center justify-between mb-2">
             <label class="text-lg" for="rest-duration-slider">Rest Duration</label>
@@ -227,7 +227,7 @@ function loadOptions() {
         </div>
 
         <!-- Volume Sliders -->
-        <div class="bg-primary/30 rounded-3xl p-8 shadow-xl">
+        <div class="bg-primary/30 rounded-3xl p-4 shadow-xl">
           <h2 class="text-2xl font-bold mb-6">Voice Volume</h2>
           
           <div class="mb-8">
@@ -250,7 +250,7 @@ function loadOptions() {
         </div>
 
         <!-- Feature Toggles -->
-        <div class="bg-primary/30 rounded-3xl p-8 shadow-xl">
+        <div class="bg-primary/30 rounded-3xl p-4 shadow-xl">
           <h2 class="text-2xl font-bold mb-6">Features</h2>
           
           <label class="flex items-center justify-between mb-6 cursor-pointer">
