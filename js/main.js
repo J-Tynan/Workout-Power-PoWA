@@ -213,13 +213,13 @@ function loadOptions() {
         <div class="w-20"></div>
       </div>
 
-      <div class="flex-1 overflow-y-auto space-y-10 pb-8">
+      <div class="flex-1 overflow-y-auto space-y-10 pb-6">
         <!-- Rest Duration -->
         <div class="bg-primary/30 rounded-3xl p-4 shadow-xl">
           <h2 class="text-2xl font-bold mb-4">Rest Between Exercises</h2>
           <div class="flex items-center justify-between mb-2">
             <label class="text-lg" for="rest-duration-slider">Rest Duration</label>
-            <span id="rest-duration-value" class="text-xl font-mono bg-bg px-4 py-2 rounded-lg">10s</span>
+            <span id="rest-duration-value" class="text-xl font-mono bg-bg px-2 py-2 rounded-lg">10s</span>
           </div>
           <input type="range" id="rest-duration-slider" min="5" max="30" step="5" value="10" 
                  class="w-full h-4 bg-gray-700 rounded-full appearance-none cursor-pointer slider" aria-label="Rest Duration">
@@ -232,7 +232,7 @@ function loadOptions() {
           <div class="mb-8">
             <div class="flex items-center justify-between mb-2">
               <label class="text-lg" for="voice-volume-slider">Guidance Voice</label>
-              <span id="voice-volume-value" class="text-xl font-mono bg-bg px-4 py-2 rounded-lg">100%</span>
+              <span id="voice-volume-value" class="text-xl font-mono bg-bg px-2 py-2 rounded-lg">100%</span>
             </div>
             <input type="range" id="voice-volume-slider" min="0" max="100" value="100" 
                    class="w-full h-4 bg-gray-700 rounded-full appearance-none cursor-pointer slider" aria-label="Guidance Voice Volume">
@@ -241,7 +241,7 @@ function loadOptions() {
           <div>
             <div class="flex items-center justify-between mb-2">
               <label class="text-lg" for="beep-volume-slider">Countdown Beeps</label>
-              <span id="beep-volume-value" class="text-xl font-mono bg-bg px-4 py-2 rounded-lg">100%</span>
+              <span id="beep-volume-value" class="text-xl font-mono bg-bg px-2 py-2 rounded-lg">100%</span>
             </div>
             <input type="range" id="beep-volume-slider" min="0" max="100" value="100" 
                    class="w-full h-4 bg-gray-700 rounded-full appearance-none cursor-pointer slider" aria-label="Countdown Beep Volume">
@@ -263,6 +263,7 @@ function loadOptions() {
           <div class="flex items-center justify-between">
             <label class="text-lg" for="light-color-select">Light Theme Colour</label>
             <select id="light-color-select" class="bg-bg text-light rounded-md px-3 py-2" aria-label="Light theme colour">
+              <option value="#16A34A">Green</option>
               <option value="#3B82F6">Blue</option>
               <option value="#F43F5E">Rose</option>
               <option value="#10B981">Emerald</option>
@@ -338,7 +339,7 @@ function loadOptions() {
     document.getElementById('toggle-sounds').checked = settings.sounds ?? false;
     // Theme settings
     if (themeSelector) themeSelector.value = settings.theme ?? 'system';
-    if (lightColorSelect) lightColorSelect.value = settings.lightColor ?? getComputedStyle(document.documentElement).getPropertyValue('--default-accent').trim();
+    if (lightColorSelect) lightColorSelect.value = settings.lightColor ?? '#16A34A';
     // Apply the theme immediately for preview
     applyTheme(settings.theme ?? 'system', settings.lightColor ?? null);
   } else {
