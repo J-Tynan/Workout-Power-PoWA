@@ -229,7 +229,7 @@ function loadOptions() {
         <div class="bg-primary/30 rounded-3xl p-4 shadow-xl">
           <h2 class="text-2xl font-bold mb-2">Volume Controls</h2>
           
-          <div class="mb-8">
+          <div class="mb-4">
             <div class="flex items-center justify-between mb-2">
               <label class="text-lg" for="voice-volume-slider">Guidance Voice</label>
               <span id="voice-volume-value" class="text-xl font-mono bg-bg px-2 py-2 rounded-lg">100%</span>
@@ -395,8 +395,7 @@ function loadOptions() {
     lightColorSelect.addEventListener('change', () => {
       const theme = themeSelector ? themeSelector.value : 'system';
       const lightColor = lightColorSelect.value;
-      // Only apply immediately when in light mode
-      if (theme === 'light') applyTheme('light', lightColor);
+      applyTheme(theme, lightColor);
       saveSettings();
     });
   }
@@ -407,23 +406,52 @@ function loadOptions() {
   // Back button event
   document.getElementById('back-btn').addEventListener('click', () => window.WorkoutApp.goBackFromOptions());
 
+  // Light palette map for selectable accents
+  const LIGHT_THEME_PALETTES = {
+    '#16a34a': { accent: '#16a34a', bg: '#f0fdf4', primary: '#dcfce7', light: '#0f172a' }, // Green
+    '#3b82f6': { accent: '#2563eb', bg: '#eff6ff', primary: '#dbeafe', light: '#1e3a8a' }, // Blue
+    '#f43f5e': { accent: '#f43f5e', bg: '#fff1f2', primary: '#ffe4ec', light: '#581c2e' }, // Rose
+    '#10b981': { accent: '#059669', bg: '#ecfdf5', primary: '#d1fae5', light: '#064e3b' }, // Emerald
+    '#f59e0b': { accent: '#d97706', bg: '#fff7ed', primary: '#ffedd5', light: '#78350f' }, // Amber
+    '#6366f1': { accent: '#4c1d95', bg: '#eef2ff', primary: '#e0e7ff', light: '#312e81' }, // Indigo
+    '#14b8a6': { accent: '#0d9488', bg: '#ecfeff', primary: '#ccfbf1', light: '#0f766e' }  // Teal
+  };
+  const DEFAULT_DARK_PALETTE = { accent: '#16a34a', bg: '#07140d', primary: '#0f3d1a', light: '#c7f9d0' };
+  const DEFAULT_LIGHT_PALETTE = LIGHT_THEME_PALETTES['#16a34a'];
+
+  function applyPalette(palette) {
+    const root = document.documentElement;
+    if (!palette) return;
+    root.style.setProperty('--color-bg', palette.bg);
+    root.style.setProperty('--color-primary', palette.primary);
+    root.style.setProperty('--color-light', palette.light);
+    root.style.setProperty('--color-accent', palette.accent);
+  }
+
+  function getLightPalette(color) {
+    if (!color) return DEFAULT_LIGHT_PALETTE;
+    const normalized = color.trim().toLowerCase();
+    return LIGHT_THEME_PALETTES[normalized] || DEFAULT_LIGHT_PALETTE;
+  }
+
   // ApplyTheme function: sets data-theme and swaps accent variable for light theme
   function applyTheme(theme, lightColor) {
     const root = document.documentElement;
     if (!theme || theme === 'system') {
       const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-      root.setAttribute('data-theme', prefersDark ? 'dark' : 'light');
-      // when system=light, use current selection or default
-      if (!prefersDark && lightColor) root.style.setProperty('--color-accent', lightColor);
-      else root.style.setProperty('--color-accent', getComputedStyle(root).getPropertyValue('--default-accent').trim());
+      if (prefersDark) {
+        root.setAttribute('data-theme', 'dark');
+        applyPalette(DEFAULT_DARK_PALETTE);
+      } else {
+        root.setAttribute('data-theme', 'light');
+        applyPalette(getLightPalette(lightColor));
+      }
     } else if (theme === 'dark') {
       root.setAttribute('data-theme', 'dark');
-      root.style.setProperty('--color-accent', getComputedStyle(root).getPropertyValue('--default-accent').trim());
+      applyPalette(DEFAULT_DARK_PALETTE);
     } else if (theme === 'light') {
       root.setAttribute('data-theme', 'light');
-      // set accent to selected light color or default
-      const color = lightColor || (lightColorSelect ? lightColorSelect.value : getComputedStyle(root).getPropertyValue('--default-accent').trim());
-      if (color) root.style.setProperty('--color-accent', color);
+      applyPalette(getLightPalette(lightColor));
     }
   }
 }
