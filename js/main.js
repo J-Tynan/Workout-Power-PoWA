@@ -87,7 +87,7 @@ async function loadWorkoutPreview(filename) {
               let restCard = '';
               if (index < currentWorkout.exercises.length - 1 || restSeconds > 0) {
               restCard = `
-              <div class="flex flex-col items-center justify-center min-w-64">
+              <div class="flex flex-col items-center justify-center min-w-48">
                 <div class="bg-primary/40 rounded-2xl px-6 py-10 shadow-inner w-full max-w-xs">
                   <p class="text-2xl font-bold text-center">Rest</p>
                   <p class="text-4xl font-mono mt-2 text-center">${restSeconds}s</p>
