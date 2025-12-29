@@ -311,6 +311,19 @@ function loadOptions() {
 
   history.pushState({ view: 'options' }, '', '#options');
 
+  // Light palette map for selectable accents (must be defined before applyTheme runs)
+  const LIGHT_THEME_PALETTES = {
+    '#16a34a': { accent: '#16a34a', bg: '#f0fdf4', primary: '#dcfce7', light: '#0f172a' }, // Green
+    '#3b82f6': { accent: '#2563eb', bg: '#eff6ff', primary: '#dbeafe', light: '#1e3a8a' }, // Blue
+    '#f43f5e': { accent: '#f43f5e', bg: '#fff1f2', primary: '#ffe4ec', light: '#581c2e' }, // Rose
+    '#10b981': { accent: '#059669', bg: '#ecfdf5', primary: '#d1fae5', light: '#064e3b' }, // Emerald
+    '#f59e0b': { accent: '#d97706', bg: '#fff7ed', primary: '#ffedd5', light: '#78350f' }, // Amber
+    '#6366f1': { accent: '#4c1d95', bg: '#eef2ff', primary: '#e0e7ff', light: '#312e81' }, // Indigo
+    '#14b8a6': { accent: '#0d9488', bg: '#ecfeff', primary: '#ccfbf1', light: '#0f766e' }  // Teal
+  };
+  const DEFAULT_DARK_PALETTE = { accent: '#16a34a', bg: '#07140d', primary: '#0f3d1a', light: '#c7f9d0' };
+  const DEFAULT_LIGHT_PALETTE = LIGHT_THEME_PALETTES['#16a34a'];
+
   // === Settings Persistence & Wiring ===
   const SETTINGS_KEY = 'workoutPowerSettings';
   const saved = localStorage.getItem(SETTINGS_KEY);
@@ -405,19 +418,6 @@ function loadOptions() {
 
   // Back button event
   document.getElementById('back-btn').addEventListener('click', () => window.WorkoutApp.goBackFromOptions());
-
-  // Light palette map for selectable accents
-  const LIGHT_THEME_PALETTES = {
-    '#16a34a': { accent: '#16a34a', bg: '#f0fdf4', primary: '#dcfce7', light: '#0f172a' }, // Green
-    '#3b82f6': { accent: '#2563eb', bg: '#eff6ff', primary: '#dbeafe', light: '#1e3a8a' }, // Blue
-    '#f43f5e': { accent: '#f43f5e', bg: '#fff1f2', primary: '#ffe4ec', light: '#581c2e' }, // Rose
-    '#10b981': { accent: '#059669', bg: '#ecfdf5', primary: '#d1fae5', light: '#064e3b' }, // Emerald
-    '#f59e0b': { accent: '#d97706', bg: '#fff7ed', primary: '#ffedd5', light: '#78350f' }, // Amber
-    '#6366f1': { accent: '#4c1d95', bg: '#eef2ff', primary: '#e0e7ff', light: '#312e81' }, // Indigo
-    '#14b8a6': { accent: '#0d9488', bg: '#ecfeff', primary: '#ccfbf1', light: '#0f766e' }  // Teal
-  };
-  const DEFAULT_DARK_PALETTE = { accent: '#16a34a', bg: '#07140d', primary: '#0f3d1a', light: '#c7f9d0' };
-  const DEFAULT_LIGHT_PALETTE = LIGHT_THEME_PALETTES['#16a34a'];
 
   function applyPalette(palette) {
     const root = document.documentElement;
