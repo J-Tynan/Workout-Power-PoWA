@@ -114,9 +114,17 @@ async function loadWorkoutPreview(filename) {
     const startDiv = document.createElement('div');
     startDiv.className = 'bg-accent rounded-2xl p-6 min-w-80 max-w-sm shadow-2xl flex items-center justify-center';
     const startBtn = document.createElement('button');
-    startBtn.className = 'text-4xl font-bold text-bg';
+    // Use stacked spans so label breaks to multiple lines and remains accessible
+    startBtn.className = 'text-4xl font-bold text-bg text-center';
     startBtn.setAttribute('aria-label', 'Start Workout');
-    startBtn.textContent = 'Start Workout →';
+    const startLine1 = document.createElement('span');
+    startLine1.className = 'block';
+    startLine1.textContent = 'Start Workout';
+    const startLine2 = document.createElement('span');
+    startLine2.className = 'block text-2xl';
+    startLine2.textContent = '→';
+    startBtn.appendChild(startLine1);
+    startBtn.appendChild(startLine2);
     startBtn.addEventListener('click', () => window.WorkoutApp.startTimer());
     startDiv.appendChild(startBtn);
     carousel.appendChild(startDiv);
