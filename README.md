@@ -1,6 +1,6 @@
 # [WIP] Workout Power PWA
 
-A modern, open-source, installable Progressive Web App (PWA) revival of the famous Scientific 7-Minute Workout originally published by The New York Times and based on the 2013 ACSM paper.
+A modern, open-source, installable Progressive Web App (PWA) revival of the famous [Scientific 7-Minute Workout originally published by The New York Times](https://archive.nytimes.com/well.blogs.nytimes.com/2013/05/09/the-scientific-7-minute-workout/) and based on the [2013 paper from the American College of Sports Medicine’s Health & Fitness Journal](https://journals.lww.com/acsm-healthfitness/Fulltext/2013/05000/HIGH_INTENSITY_CIRCUIT_TRAINING_USING_BODY_WEIGHT_.5.aspx).
 
 This app delivers high-intensity circuit training (HICT) using only body weight, a chair, and a wall — no gym required. It is designed to be simple, beautiful, and effective, with multiple workout variations and full offline support.
 
@@ -83,3 +83,4 @@ Then open `http://localhost:5173`.
 
 ## License
 MIT License — free to use, modify, and share.
+
