@@ -14,7 +14,7 @@
   {
     "id": "warmup",
     "name": "Dynamic Warm-Up",
-    "description": "Gentle full-body preparation (~6 min)",
+    "description": "Gentle full-body preparation.",
     "filename": "warmup.json"
   },
   {
@@ -31,3 +31,4 @@
   }
 
 ]
+
