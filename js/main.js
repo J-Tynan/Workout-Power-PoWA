@@ -641,6 +641,13 @@ function loadOptions() {
             </div>
           </label>
         </div>
+
+        <!-- Debug -->
+        <div class="bg-primary/30 rounded-3xl p-4 shadow-xl text-left">
+          <h2 class="text-2xl font-bold mb-4 text-center">Debug</h2>
+          <button id="test-celebrations-btn" class="w-full bg-accent text-bg font-bold rounded-2xl py-3 px-4" aria-label="Test Celebrations">Test Celebrations</button>
+          <p class="text-sm text-light/80 mt-3">Cycles through celebrations for 10 seconds.</p>
+        </div>
       </div>
     </div>
   `;
@@ -754,6 +761,16 @@ function loadOptions() {
   // Back button event
   document.getElementById('back-btn').addEventListener('click', () => window.WorkoutApp.goBackFromOptions());
 
+  // Debug: test celebrations (cycles through the celebration list)
+  const testCelebrationsBtn = document.getElementById('test-celebrations-btn');
+  if (testCelebrationsBtn) {
+    testCelebrationsBtn.addEventListener('click', () => {
+      const settingsNow = loadSettings();
+      if (!(settingsNow.celebrations ?? true)) return;
+      startNextCelebration(testCelebrationsBtn);
+    });
+  }
+
 }
 
 function startTimer() {
@@ -799,9 +816,9 @@ function startTimer() {
           <span id="overall-eta">Est. ${formatClock(estimatedTotalSeconds)}</span>
         </div>
 
-        <div id="next-up" class="mt-8 bg-primary/30 rounded-3xl p-5 w-full max-w-xl text-left">
+        <div id="next-up" class="mt-8 bg-primary/30 rounded-3xl p-5 w-fit max-w-full mx-auto text-left">
           <p class="text-xl font-bold mb-2">Up next:</p>
-          <div id="next-up-lines" class="text-lg text-light/90 space-y-1"></div>
+          <div id="next-up-lines" class="text-lg text-light/90 space-y-1 break-words"></div>
         </div>
       </div>
 
@@ -965,7 +982,7 @@ function startTimer() {
 
     if ((completionSettings.celebrations ?? true) && !prefersReducedMotion()) {
       const titleEl = document.getElementById('completion-title');
-      runConfettiBurstFromElement(titleEl);
+      startNextCelebration(titleEl);
     }
     document.getElementById('back-to-menu-btn').addEventListener('click', () => window.WorkoutApp.loadWorkoutList());
   }
@@ -1082,56 +1099,64 @@ function prefersReducedMotion() {
   return !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
 }
 
-function runConfettiBurstFromElement(anchorEl) {
-  if (!anchorEl) return;
-  if (prefersReducedMotion()) return;
+let activeCelebration = null;
+let celebrationIndex = 0;
 
+function getAnchorCenter(anchorEl) {
   const rect = anchorEl.getBoundingClientRect();
-  const originX = rect.left + rect.width / 2;
-  const originY = rect.top + rect.height / 2;
+  return {
+    x: rect.left + rect.width / 2,
+    y: rect.top + rect.height / 2
+  };
+}
 
+function randomConfettiColor() {
+  // Bright, random colors (works in light/dark themes)
+  const hue = Math.floor(Math.random() * 360);
+  const sat = 85;
+  const light = 60;
+  return `hsl(${hue} ${sat}% ${light}%)`;
+}
+
+function createCelebrationLayer() {
   const container = document.createElement('div');
   container.style.position = 'fixed';
   container.style.inset = '0';
   container.style.pointerEvents = 'none';
   container.style.overflow = 'hidden';
-  container.style.zIndex = '9999';
-
+  // Stay on top of everything, including overlays
+  container.style.zIndex = '2147483647';
   document.body.appendChild(container);
+  return container;
+}
 
-  const colors = [
-    'rgb(var(--color-accent))',
-    'rgb(var(--color-light))',
-    'rgb(var(--color-primary))'
-  ];
-
-  const pieceCount = 70;
+function spawnConfettiBurst(container, originX, originY, pieceCount = 70) {
   for (let i = 0; i < pieceCount; i++) {
     const piece = document.createElement('div');
-    const size = 6 + Math.random() * 8;
+    const size = 6 + Math.random() * 10;
     piece.style.position = 'absolute';
     piece.style.left = `${originX}px`;
     piece.style.top = `${originY}px`;
     piece.style.width = `${size}px`;
-    piece.style.height = `${size * 0.55}px`;
+    piece.style.height = `${Math.max(4, size * 0.55)}px`;
     piece.style.borderRadius = '2px';
-    piece.style.background = colors[i % colors.length];
+    piece.style.background = randomConfettiColor();
     piece.style.opacity = '1';
     piece.style.transform = 'translate(-50%, -50%)';
     container.appendChild(piece);
 
-    const angle = (Math.PI * 2) * (i / pieceCount) + (Math.random() * 0.6 - 0.3);
-    const velocity = 260 + Math.random() * 420;
+    const angle = (Math.PI * 2) * (i / pieceCount) + (Math.random() * 0.7 - 0.35);
+    const velocity = 240 + Math.random() * 520;
     const dx = Math.cos(angle) * velocity;
-    const dy = Math.sin(angle) * velocity - (250 + Math.random() * 250);
-    const rotate = (Math.random() * 720 - 360);
-    const duration = 1200 + Math.random() * 900;
+    const dy = Math.sin(angle) * velocity - (260 + Math.random() * 320);
+    const rotate = (Math.random() * 820 - 410);
+    const duration = 1600 + Math.random() * 1200;
 
-    piece.animate(
+    const anim = piece.animate(
       [
         { transform: 'translate(-50%, -50%) translate(0px, 0px) rotate(0deg)', opacity: 1 },
         { transform: `translate(-50%, -50%) translate(${dx}px, ${dy}px) rotate(${rotate}deg)`, opacity: 1, offset: 0.55 },
-        { transform: `translate(-50%, -50%) translate(${dx * 1.05}px, ${dy + 520}px) rotate(${rotate * 1.2}deg)`, opacity: 0 }
+        { transform: `translate(-50%, -50%) translate(${dx * 1.05}px, ${dy + 700}px) rotate(${rotate * 1.2}deg)`, opacity: 0 }
       ],
       {
         duration,
@@ -1139,9 +1164,198 @@ function runConfettiBurstFromElement(anchorEl) {
         fill: 'forwards'
       }
     );
-  }
 
-  window.setTimeout(() => {
-    container.remove();
-  }, 2600);
+    anim.addEventListener('finish', () => {
+      piece.remove();
+    });
+  }
+}
+
+function startConfettiCelebration(anchorEl, durationMs = 10000) {
+  if (!anchorEl) return { stop() {} };
+  if (prefersReducedMotion()) return { stop() {} };
+
+  const container = createCelebrationLayer();
+  let stopped = false;
+
+  const startTime = performance.now();
+  const burst = () => {
+    if (stopped) return;
+    const elapsed = performance.now() - startTime;
+    if (elapsed > durationMs) {
+      stop();
+      return;
+    }
+    const { x, y } = getAnchorCenter(anchorEl);
+    spawnConfettiBurst(container, x, y, 50 + Math.floor(Math.random() * 30));
+  };
+
+  const burstId = window.setInterval(burst, 650);
+  burst();
+
+  const stop = () => {
+    if (stopped) return;
+    stopped = true;
+    window.clearInterval(burstId);
+    window.setTimeout(() => container.remove(), 1200);
+  };
+
+  return { stop };
+}
+
+function spawnFireworkExplosion(container, x, y) {
+  // Flash burst (simulated "HDR" via brightness + glow)
+  const flash = document.createElement('div');
+  flash.style.position = 'absolute';
+  flash.style.left = `${x}px`;
+  flash.style.top = `${y}px`;
+  flash.style.width = '10px';
+  flash.style.height = '10px';
+  flash.style.borderRadius = '9999px';
+  flash.style.transform = 'translate(-50%, -50%)';
+  flash.style.background = 'white';
+  flash.style.opacity = '0.9';
+  flash.style.filter = 'brightness(2.2) saturate(1.8)';
+  flash.style.boxShadow = '0 0 24px rgba(255,255,255,0.95), 0 0 60px rgba(255,255,255,0.55)';
+  flash.style.mixBlendMode = 'screen';
+  container.appendChild(flash);
+  const flashAnim = flash.animate(
+    [
+      { transform: 'translate(-50%, -50%) scale(1)', opacity: 0.95 },
+      { transform: 'translate(-50%, -50%) scale(6)', opacity: 0.0 }
+    ],
+    { duration: 180, easing: 'ease-out', fill: 'forwards' }
+  );
+  flashAnim.addEventListener('finish', () => flash.remove());
+
+  const particleCount = 46 + Math.floor(Math.random() * 22);
+  for (let i = 0; i < particleCount; i++) {
+    const p = document.createElement('div');
+    const size = 2 + Math.random() * 3.5;
+    p.style.position = 'absolute';
+    p.style.left = `${x}px`;
+    p.style.top = `${y}px`;
+    p.style.width = `${size}px`;
+    p.style.height = `${size}px`;
+    p.style.borderRadius = '9999px';
+    p.style.transform = 'translate(-50%, -50%)';
+    p.style.background = randomConfettiColor();
+    p.style.opacity = '1';
+    p.style.filter = 'brightness(1.9) saturate(1.6)';
+    p.style.boxShadow = '0 0 16px rgba(255,255,255,0.22)';
+    p.style.mixBlendMode = 'screen';
+    container.appendChild(p);
+
+    const angle = (Math.PI * 2) * (i / particleCount) + (Math.random() * 0.25);
+    const speed = 220 + Math.random() * 520;
+    const dx = Math.cos(angle) * speed;
+    const dy = Math.sin(angle) * speed;
+    const gravity = 420 + Math.random() * 520;
+    const duration = 1400 + Math.random() * 900;
+
+    const anim = p.animate(
+      [
+        { transform: 'translate(-50%, -50%) translate(0px, 0px) scale(1)', opacity: 1 },
+        { transform: `translate(-50%, -50%) translate(${dx}px, ${dy}px) scale(1)`, opacity: 0.95, offset: 0.5 },
+        { transform: `translate(-50%, -50%) translate(${dx * 1.15}px, ${dy + gravity}px) scale(0.9)`, opacity: 0 }
+      ],
+      { duration, easing: 'cubic-bezier(0.15, 0.85, 0.2, 1)', fill: 'forwards' }
+    );
+
+    anim.addEventListener('finish', () => p.remove());
+  }
+}
+
+function launchFirework(container) {
+  const startX = Math.floor(window.innerWidth * (0.12 + Math.random() * 0.76));
+  const startY = window.innerHeight + 24;
+  const endX = startX + (Math.random() * 160 - 80);
+  const endY = Math.floor(window.innerHeight * (0.08 + Math.random() * 0.24));
+
+  const rocket = document.createElement('div');
+  rocket.style.position = 'absolute';
+  rocket.style.left = `${startX}px`;
+  rocket.style.top = `${startY}px`;
+  rocket.style.width = '4px';
+  rocket.style.height = '14px';
+  rocket.style.borderRadius = '9999px';
+  rocket.style.transform = 'translate(-50%, -50%)';
+  rocket.style.background = 'white';
+  rocket.style.opacity = '0.95';
+  rocket.style.filter = 'brightness(2)';
+  rocket.style.boxShadow = '0 0 14px rgba(255,255,255,0.8)';
+  rocket.style.mixBlendMode = 'screen';
+  container.appendChild(rocket);
+
+  const duration = 700 + Math.random() * 450;
+  const anim = rocket.animate(
+    [
+      { transform: 'translate(-50%, -50%) translate(0px, 0px) scaleY(1)', opacity: 0.9 },
+      { transform: `translate(-50%, -50%) translate(${endX - startX}px, ${endY - startY}px) scaleY(1.2)`, opacity: 1 }
+    ],
+    { duration, easing: 'cubic-bezier(0.15, 0.9, 0.2, 1)', fill: 'forwards' }
+  );
+
+  anim.addEventListener('finish', () => {
+    rocket.remove();
+    spawnFireworkExplosion(container, endX, endY);
+  });
+}
+
+function startFireworksCelebration(_anchorEl, durationMs = 10000) {
+  if (prefersReducedMotion()) return { stop() {} };
+
+  const container = createCelebrationLayer();
+  let stopped = false;
+  const startTime = performance.now();
+
+  const launch = () => {
+    if (stopped) return;
+    const elapsed = performance.now() - startTime;
+    if (elapsed > durationMs) {
+      stop();
+      return;
+    }
+    launchFirework(container);
+  };
+
+  launch();
+  window.setTimeout(launch, 220);
+  window.setTimeout(launch, 460);
+  const launchId = window.setInterval(launch, 900);
+
+  const stop = () => {
+    if (stopped) return;
+    stopped = true;
+    window.clearInterval(launchId);
+    window.setTimeout(() => container.remove(), 2200);
+  };
+
+  return { stop };
+}
+
+const CELEBRATIONS = [
+  {
+    id: 'confetti',
+    start: (anchorEl) => startConfettiCelebration(anchorEl, 10000)
+  },
+  {
+    id: 'fireworks',
+    start: (anchorEl) => startFireworksCelebration(anchorEl, 10000)
+  }
+];
+
+function stopCelebrationIfActive() {
+  if (activeCelebration && typeof activeCelebration.stop === 'function') {
+    activeCelebration.stop();
+  }
+  activeCelebration = null;
+}
+
+function startNextCelebration(anchorEl) {
+  stopCelebrationIfActive();
+  if (prefersReducedMotion()) return;
+  const next = CELEBRATIONS[celebrationIndex % CELEBRATIONS.length];
+  celebrationIndex = (celebrationIndex + 1) % CELEBRATIONS.length;
+  activeCelebration = next.start(anchorEl);
 }
