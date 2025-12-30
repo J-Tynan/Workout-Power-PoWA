@@ -19,6 +19,86 @@ const LIGHT_THEME_PALETTES = {
 const DEFAULT_DARK_PALETTE = { accent: '#16a34a', bg: '#07140d', primary: '#0f3d1a', light: '#c7f9d0' };
 const DEFAULT_LIGHT_PALETTE = LIGHT_THEME_PALETTES['#16a34a'];
 
+let wakeLockSentinel = null;
+let wakeLockWanted = false;
+let wakeLockLastError = null;
+
+let timerTickId = null;
+let timerState = null;
+
+function stopActiveTimer() {
+  if (timerTickId) {
+    clearInterval(timerTickId);
+    timerTickId = null;
+  }
+  timerState = null;
+  try {
+    if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+  } catch {
+    // ignore
+  }
+}
+
+function clampNumber(value, min, max) {
+  const v = Number(value);
+  if (!Number.isFinite(v)) return min;
+  return Math.max(min, Math.min(max, v));
+}
+
+function formatClock(totalSeconds) {
+  const s = Math.max(0, Math.floor(totalSeconds));
+  const m = Math.floor(s / 60);
+  const r = s % 60;
+  return `${m}:${String(r).padStart(2, '0')}`;
+}
+
+function shouldPlaySounds(settings) {
+  return (settings.sounds ?? true) && (clampNumber(settings.beepVolume ?? 100, 0, 100) > 0 || clampNumber(settings.voiceVolume ?? 100, 0, 100) > 0);
+}
+
+function playBeep(volumePercent, frequency = 880, durationMs = 90) {
+  const vol = clampNumber(volumePercent, 0, 100);
+  if (vol <= 0) return;
+  if (!('AudioContext' in window) && !('webkitAudioContext' in window)) return;
+
+  const Ctx = window.AudioContext || window.webkitAudioContext;
+  const ctx = playBeep._ctx || (playBeep._ctx = new Ctx());
+  const osc = ctx.createOscillator();
+  const gain = ctx.createGain();
+  osc.type = 'sine';
+  osc.frequency.value = frequency;
+  gain.gain.value = (vol / 100) * 0.15;
+  osc.connect(gain);
+  gain.connect(ctx.destination);
+  const now = ctx.currentTime;
+  osc.start(now);
+  osc.stop(now + durationMs / 1000);
+}
+
+function speak(text, volumePercent) {
+  const vol = clampNumber(volumePercent, 0, 100);
+  if (vol <= 0) return;
+  if (!('speechSynthesis' in window) || typeof SpeechSynthesisUtterance === 'undefined') return;
+  try {
+    window.speechSynthesis.cancel();
+    const utter = new SpeechSynthesisUtterance(String(text));
+    utter.volume = vol / 100;
+    window.speechSynthesis.speak(utter);
+  } catch {
+    // ignore
+  }
+}
+
+function vibrateIfEnabled(settings, pattern) {
+  if (!(settings.vibration ?? false)) return;
+  if (!('vibrate' in navigator)) return;
+  try {
+    navigator.vibrate(pattern);
+  } catch {
+    // ignore
+  }
+}
+
 function loadSettings() {
   const saved = localStorage.getItem(SETTINGS_KEY);
   if (!saved) return {};
@@ -79,6 +159,112 @@ function applyThemeFromStorage() {
   applyTheme(settings.theme ?? 'system', settings.lightColor ?? '#16A34A');
 }
 
+function wakeLockIsSupported() {
+  return !!(navigator && navigator.wakeLock && typeof navigator.wakeLock.request === 'function');
+}
+
+function updateWakeLockIndicators() {
+  const settings = loadSettings();
+  const enabled = settings.wakelock ?? true;
+
+  const indicators = document.querySelectorAll('[data-wakelock-indicator]');
+  if (!enabled) {
+    indicators.forEach(el => {
+      el.classList.add('hidden');
+      el.textContent = '';
+    });
+    return;
+  }
+
+  indicators.forEach(el => el.classList.remove('hidden'));
+
+  let text = 'Wake Lock: Off';
+  if (!wakeLockWanted) {
+    text = 'Wake Lock: Off';
+  } else if (!wakeLockIsSupported()) {
+    text = 'Wake Lock: Unsupported';
+  } else if (wakeLockSentinel) {
+    text = 'Wake Lock: Active';
+  } else if (wakeLockLastError) {
+    text = 'Wake Lock: Enabled (blocked)';
+  } else {
+    text = 'Wake Lock: Enabled';
+  }
+
+  indicators.forEach(el => {
+    el.textContent = text;
+  });
+}
+
+async function requestWakeLockIfNeeded() {
+  if (!wakeLockWanted) {
+    updateWakeLockIndicators();
+    return;
+  }
+
+  const settings = loadSettings();
+  const enabled = settings.wakelock ?? true;
+  if (!enabled) {
+    await releaseWakeLock();
+    updateWakeLockIndicators();
+    return;
+  }
+
+  if (!wakeLockIsSupported()) {
+    updateWakeLockIndicators();
+    return;
+  }
+
+  if (wakeLockSentinel) {
+    updateWakeLockIndicators();
+    return;
+  }
+
+  if (document.visibilityState !== 'visible') {
+    updateWakeLockIndicators();
+    return;
+  }
+
+  try {
+    wakeLockLastError = null;
+    wakeLockSentinel = await navigator.wakeLock.request('screen');
+    wakeLockSentinel.addEventListener('release', () => {
+      wakeLockSentinel = null;
+      updateWakeLockIndicators();
+      if (wakeLockWanted && document.visibilityState === 'visible') {
+        requestWakeLockIfNeeded();
+      }
+    });
+  } catch (err) {
+    wakeLockLastError = err;
+    wakeLockSentinel = null;
+    console.warn('Wake Lock request failed:', err);
+  }
+
+  updateWakeLockIndicators();
+}
+
+async function releaseWakeLock() {
+  if (!wakeLockSentinel) return;
+  try {
+    await wakeLockSentinel.release();
+  } catch (err) {
+    console.warn('Wake Lock release failed:', err);
+  } finally {
+    wakeLockSentinel = null;
+  }
+}
+
+function setWakeLockWanted(nextWanted) {
+  wakeLockWanted = !!nextWanted;
+  if (!wakeLockWanted) {
+    wakeLockLastError = null;
+    releaseWakeLock();
+  }
+  updateWakeLockIndicators();
+  requestWakeLockIfNeeded();
+}
+
 // React to OS/browser scheme changes only when user chose Theme=System.
 function handleSystemThemeChange() {
   const settings = loadSettings();
@@ -93,12 +279,24 @@ if (colorSchemeQuery.addEventListener) {
   colorSchemeQuery.addListener(handleSystemThemeChange);
 }
 
+document.addEventListener('visibilitychange', () => {
+  if (!wakeLockWanted) return;
+  if (document.visibilityState === 'visible') {
+    requestWakeLockIfNeeded();
+  } else {
+    releaseWakeLock();
+    updateWakeLockIndicators();
+  }
+});
+
 // Namespace for global functions
 window.WorkoutApp = {};
 
 // History state management
 async function loadWorkoutList() {
   try {
+    stopActiveTimer();
+    setWakeLockWanted(false);
     const response = await fetch('data/workouts/index.json');
     const workouts = await response.json();
 
@@ -148,6 +346,8 @@ async function loadWorkoutList() {
 
 async function loadWorkoutPreview(filename) {
   try {
+    stopActiveTimer();
+    setWakeLockWanted(false);
     const response = await fetch(`data/workouts/${filename}`);
     currentWorkout = await response.json();
     currentFilename = filename;
@@ -293,6 +493,8 @@ async function loadWorkoutPreview(filename) {
 }
 
 function loadOptions() {
+  stopActiveTimer();
+  setWakeLockWanted(false);
   app.innerHTML = `
     <div class="p-4 max-w-4xl mx-auto text-center flex flex-col h-full min-h-0">
       <div class="flex justify-between items-center mb-4 flex-none">
@@ -311,6 +513,15 @@ function loadOptions() {
           </div>
           <input type="range" id="rest-duration-slider" min="5" max="30" step="5" value="10"
                  class="w-full h-3 bg-gray-700 rounded-full appearance-none cursor-pointer slider" aria-label="Rest Duration">
+
+          <div class="mt-6">
+            <div class="flex items-center justify-between mb-2">
+              <label class="text-lg" for="preworkout-slider">Pre-workout Countdown</label>
+              <span id="preworkout-value" class="text-xl font-mono bg-bg px-3 py-2 rounded-lg">5s</span>
+            </div>
+            <input type="range" id="preworkout-slider" min="3" max="10" step="1" value="5"
+                   class="w-full h-3 bg-gray-700 rounded-full appearance-none cursor-pointer slider" aria-label="Pre-workout Countdown">
+          </div>
         </div>
 
         <!-- 2) Volume Controls -->
@@ -403,6 +614,8 @@ function loadOptions() {
   // Elements
   const restSlider = document.getElementById('rest-duration-slider');
   const restValue = document.getElementById('rest-duration-value');
+  const preworkoutSlider = document.getElementById('preworkout-slider');
+  const preworkoutValue = document.getElementById('preworkout-value');
   const voiceSlider = document.getElementById('voice-volume-slider');
   const voiceValue = document.getElementById('voice-volume-value');
   const beepSlider = document.getElementById('beep-volume-slider');
@@ -413,6 +626,9 @@ function loadOptions() {
   // Load saved values (apply sensible defaults when missing)
   restSlider.value = settings.restDuration ?? 10;
   restValue.textContent = `${restSlider.value}s`;
+
+  preworkoutSlider.value = settings.preWorkoutSeconds ?? 5;
+  preworkoutValue.textContent = `${preworkoutSlider.value}s`;
 
   voiceSlider.value = settings.voiceVolume ?? 100;
   voiceValue.textContent = `${voiceSlider.value}%`;
@@ -443,6 +659,7 @@ function loadOptions() {
   function saveSettings() {
     const current = {
       restDuration: parseInt(restSlider.value),
+      preWorkoutSeconds: parseInt(preworkoutSlider.value),
       voiceVolume: parseInt(voiceSlider.value),
       beepVolume: parseInt(beepSlider.value),
       theme: themeSelector ? themeSelector.value : 'system',
@@ -458,6 +675,10 @@ function loadOptions() {
 
   restSlider.addEventListener('input', () => {
     restValue.textContent = `${restSlider.value}s`;
+    saveSettings();
+  });
+  preworkoutSlider.addEventListener('input', () => {
+    preworkoutValue.textContent = `${preworkoutSlider.value}s`;
     saveSettings();
   });
   voiceSlider.addEventListener('input', () => {
@@ -494,18 +715,223 @@ function loadOptions() {
 
 }
 
-// Placeholder timer (we'll replace this tomorrow)
 function startTimer() {
+  stopActiveTimer();
+
+  if (!currentWorkout || !Array.isArray(currentWorkout.exercises) || currentWorkout.exercises.length === 0) {
+    app.innerHTML = `<p class="text-red-400 p-8 text-center">No workout loaded.</p>`;
+    return;
+  }
+
+  const settings = loadSettings();
+  const restSeconds = clampNumber(settings.restDuration ?? 10, 0, 60);
+  const preWorkoutSeconds = clampNumber(settings.preWorkoutSeconds ?? 5, 3, 10);
+  const voiceVolume = clampNumber(settings.voiceVolume ?? 100, 0, 100);
+  const beepVolume = clampNumber(settings.beepVolume ?? 100, 0, 100);
+
+  setWakeLockWanted(true);
+
+  const totalExercises = currentWorkout.exercises.length;
+  const totalWorkSeconds = currentWorkout.exercises.reduce((sum, ex) => sum + (ex.durationSeconds || currentWorkout.defaultWorkSeconds || 30), 0);
+  const totalRestSeconds = restSeconds > 0 ? restSeconds * Math.max(0, totalExercises - 1) : 0;
+  const estimatedTotalSeconds = preWorkoutSeconds + totalWorkSeconds + totalRestSeconds;
+
   app.innerHTML = `
-    <div class="flex flex-col items-center justify-center h-full p-8 text-center">
-      <h1 class="text-5xl md:text-7xl font-bold mb-8">Timer Coming Tomorrow!</h1>
-      <p class="text-3xl mb-8">Full countdown, voice cues, and rest timing</p>
-      <button id="back-to-preview-btn" class="text-2xl text-light underline" aria-label="Back to Preview">
-        ← Back
-      </button>
+    <div class="flex flex-col h-full min-h-0">
+      <div class="p-4 bg-primary/80 flex justify-between items-center">
+        <button id="back-to-preview-btn" class="text-lg text-light underline" aria-label="Back to Preview">← Back</button>
+        <div class="text-sm font-medium text-light/90 bg-primary/40 px-3 py-2 rounded-xl" data-wakelock-indicator aria-live="polite">Wake Lock</div>
+        <button id="pause-btn" class="text-lg text-light underline" aria-label="Pause workout">Pause</button>
+      </div>
+
+      <div class="flex-1 min-h-0 flex flex-col items-center justify-center p-8 text-center">
+        <p id="phase-label" class="text-xl md:text-2xl text-light/90 mb-4">Get ready</p>
+        <h1 id="exercise-name" class="text-4xl md:text-6xl font-bold mb-4">${currentWorkout.name || 'Workout'}</h1>
+        <div id="time-remaining" class="text-7xl md:text-8xl font-mono font-bold mb-6">0:00</div>
+
+        <div class="w-full max-w-xl bg-primary/30 rounded-full h-3 overflow-hidden">
+          <div id="progress-bar" class="bg-accent h-3" style="width: 0%"></div>
+        </div>
+        <div class="mt-4 text-lg text-light/80">
+          <span id="progress-text">0 / ${totalExercises}</span>
+          <span class="mx-3">•</span>
+          <span id="overall-eta">Est. ${formatClock(estimatedTotalSeconds)}</span>
+        </div>
+      </div>
+
+      <div id="pause-overlay" class="hidden fixed inset-0 bg-bg/95 text-light">
+        <div class="h-full flex flex-col items-center justify-center p-8 text-center">
+          <h2 class="text-5xl md:text-6xl font-bold mb-6">Paused</h2>
+          <div class="text-base font-medium text-light/90 bg-primary/40 px-4 py-3 rounded-xl mb-8" data-wakelock-indicator aria-live="polite">Wake Lock</div>
+          <button id="resume-btn" class="text-2xl text-light underline" aria-label="Resume workout">Resume</button>
+        </div>
+      </div>
     </div>
   `;
-  document.getElementById('back-to-preview-btn').addEventListener('click', () => window.WorkoutApp.loadWorkoutPreview(currentFilename || 'quick-test.json'));
+
+  const backBtn = document.getElementById('back-to-preview-btn');
+  const pauseBtn = document.getElementById('pause-btn');
+  const resumeBtn = document.getElementById('resume-btn');
+  const pauseOverlay = document.getElementById('pause-overlay');
+  const phaseLabel = document.getElementById('phase-label');
+  const exerciseName = document.getElementById('exercise-name');
+  const timeRemainingEl = document.getElementById('time-remaining');
+  const progressBar = document.getElementById('progress-bar');
+  const progressText = document.getElementById('progress-text');
+
+  function goBack() {
+    stopActiveTimer();
+    setWakeLockWanted(false);
+    window.WorkoutApp.loadWorkoutPreview(currentFilename || 'quick-test.json');
+  }
+
+  backBtn.addEventListener('click', goBack);
+
+  pauseBtn.addEventListener('click', () => {
+    if (!timerState || timerState.completed) return;
+    timerState.paused = true;
+    timerState.pauseStartedAt = performance.now();
+    try {
+      if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+    } catch {
+      // ignore
+    }
+    pauseOverlay.classList.remove('hidden');
+    updateWakeLockIndicators();
+  });
+
+  resumeBtn.addEventListener('click', () => {
+    if (!timerState || timerState.completed) return;
+    if (timerState.paused) {
+      const pauseDelta = performance.now() - (timerState.pauseStartedAt || performance.now());
+      timerState.phaseEndsAt += pauseDelta;
+    }
+    timerState.paused = false;
+    timerState.pauseStartedAt = null;
+    pauseOverlay.classList.add('hidden');
+    updateWakeLockIndicators();
+  });
+
+  function setPhase(nextPhase, nextExerciseIndex, durationSeconds) {
+    timerState.phase = nextPhase;
+    timerState.exerciseIndex = nextExerciseIndex;
+    timerState.phaseDuration = durationSeconds;
+    timerState.phaseEndsAt = performance.now() + durationSeconds * 1000;
+    timerState.lastSecondSpoken = null;
+
+    if (nextPhase === 'prepare') {
+      phaseLabel.textContent = 'Get ready';
+      exerciseName.textContent = currentWorkout.name || 'Workout';
+      progressText.textContent = `0 / ${totalExercises}`;
+    } else if (nextPhase === 'work') {
+      const ex = currentWorkout.exercises[nextExerciseIndex];
+      phaseLabel.textContent = 'Work';
+      exerciseName.textContent = ex?.name || `Exercise ${nextExerciseIndex + 1}`;
+      progressText.textContent = `${nextExerciseIndex + 1} / ${totalExercises}`;
+
+      if (shouldPlaySounds(settings)) {
+        speak(exerciseName.textContent, voiceVolume);
+        playBeep(beepVolume, 1320, 120);
+      }
+      vibrateIfEnabled(settings, [40, 30, 40]);
+    } else if (nextPhase === 'rest') {
+      phaseLabel.textContent = 'Rest';
+      exerciseName.textContent = 'Rest';
+      progressText.textContent = `${nextExerciseIndex} / ${totalExercises}`;
+
+      if (shouldPlaySounds(settings)) {
+        playBeep(beepVolume, 660, 140);
+      }
+      vibrateIfEnabled(settings, [80]);
+    }
+
+    updateWakeLockIndicators();
+  }
+
+  function completeWorkout() {
+    stopActiveTimer();
+    setWakeLockWanted(false);
+    app.innerHTML = `
+      <div class="flex flex-col items-center justify-center h-full p-8 text-center">
+        <h1 class="text-5xl md:text-7xl font-bold mb-6">Workout Complete!</h1>
+        <p class="text-2xl text-light/80 mb-10">Nice work.</p>
+        <button id="back-to-menu-btn" class="text-2xl text-light underline" aria-label="Back to Menu">Back to Menu</button>
+      </div>
+    `;
+    document.getElementById('back-to-menu-btn').addEventListener('click', () => window.WorkoutApp.loadWorkoutList());
+  }
+
+  timerState = {
+    phase: 'prepare',
+    exerciseIndex: 0,
+    phaseEndsAt: 0,
+    phaseDuration: preWorkoutSeconds,
+    paused: false,
+    pauseStartedAt: null,
+    completed: false,
+    lastSecondSpoken: null
+  };
+
+  setPhase('prepare', 0, preWorkoutSeconds);
+
+  // Initial render
+  updateWakeLockIndicators();
+  requestWakeLockIfNeeded();
+
+  timerTickId = setInterval(() => {
+    if (!timerState || timerState.completed) return;
+    if (timerState.paused) return;
+
+    const now = performance.now();
+    const remainingMs = timerState.phaseEndsAt - now;
+    const remainingSeconds = Math.max(0, Math.ceil(remainingMs / 1000));
+    timeRemainingEl.textContent = formatClock(remainingSeconds);
+
+    // Update progress bar (rough overall progress)
+    const phaseProgress = timerState.phaseDuration > 0
+      ? 1 - Math.max(0, remainingMs) / (timerState.phaseDuration * 1000)
+      : 1;
+    const completedWorkExercises = timerState.phase === 'work'
+      ? timerState.exerciseIndex
+      : (timerState.phase === 'rest' ? timerState.exerciseIndex : 0);
+    const overallProgress = (completedWorkExercises + (timerState.phase === 'work' ? phaseProgress : 0)) / totalExercises;
+    progressBar.style.width = `${Math.round(clampNumber(overallProgress, 0, 1) * 100)}%`;
+
+    // Beeps in last 3 seconds (for prepare/work/rest)
+    if (remainingSeconds <= 3 && remainingSeconds >= 1) {
+      if (timerState.lastSecondSpoken !== remainingSeconds) {
+        timerState.lastSecondSpoken = remainingSeconds;
+        if (settings.sounds ?? true) {
+          playBeep(beepVolume, 880, 80);
+        }
+      }
+    }
+
+    if (remainingMs <= 0) {
+      if (timerState.phase === 'prepare') {
+        const firstExSeconds = currentWorkout.exercises[0].durationSeconds || currentWorkout.defaultWorkSeconds || 30;
+        setPhase('work', 0, firstExSeconds);
+      } else if (timerState.phase === 'work') {
+        const isLast = timerState.exerciseIndex >= totalExercises - 1;
+        if (isLast) {
+          timerState.completed = true;
+          completeWorkout();
+        } else if (restSeconds > 0) {
+          setPhase('rest', timerState.exerciseIndex + 1, restSeconds);
+        } else {
+          const nextIndex = timerState.exerciseIndex + 1;
+          const nextSeconds = currentWorkout.exercises[nextIndex].durationSeconds || currentWorkout.defaultWorkSeconds || 30;
+          setPhase('work', nextIndex, nextSeconds);
+        }
+      } else if (timerState.phase === 'rest') {
+        const nextIndex = timerState.exerciseIndex;
+        const nextSeconds = currentWorkout.exercises[nextIndex].durationSeconds || currentWorkout.defaultWorkSeconds || 30;
+        setPhase('work', nextIndex, nextSeconds);
+      }
+    }
+  }, 200);
+
+  history.pushState({ view: 'timer', filename: currentFilename }, '', '#timer');
 }
 
 // Helper functions
