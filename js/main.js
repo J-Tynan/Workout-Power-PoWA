@@ -296,100 +296,96 @@ function loadOptions() {
   app.innerHTML = `
     <div class="p-4 max-w-4xl mx-auto text-center flex flex-col h-full min-h-0">
       <div class="flex justify-between items-center mb-4 flex-none">
-        <button id="back-btn" class="text-light text-lg underline" aria-label="Back">
-        Back
-        </button>
+        <button id="back-btn" class="text-light text-lg underline" aria-label="Back">Back</button>
         <h1 class="text-4xl md:text-5xl font-bold">Options</h1>
         <div class="w-20"></div>
       </div>
 
-      <div class="flex-1 min-h-0 overflow-y-auto space-y-10 pb-6">
-        <!-- Rest Duration -->
-        <div class="bg-primary/30 rounded-3xl p-4 shadow-xl">
-          <h2 class="text-2xl font-bold mb-4">Rest Between Exercises</h2>
+      <div class="flex-1 min-h-0 overflow-y-auto space-y-6 pb-6">
+        <!-- 1) Rest Between Exercises -->
+        <div class="bg-primary/30 rounded-3xl p-4 shadow-xl text-left">
+          <h2 class="text-2xl font-bold mb-4 text-center">Rest Between Exercises</h2>
           <div class="flex items-center justify-between mb-2">
             <label class="text-lg" for="rest-duration-slider">Rest Duration</label>
-            <span id="rest-duration-value" class="text-xl font-mono bg-bg px-2 py-2 rounded-lg">10s</span>
+            <span id="rest-duration-value" class="text-xl font-mono bg-bg px-3 py-2 rounded-lg">10s</span>
           </div>
-          <input type="range" id="rest-duration-slider" min="5" max="30" step="5" value="10" 
+          <input type="range" id="rest-duration-slider" min="5" max="30" step="5" value="10"
                  class="w-full h-3 bg-gray-700 rounded-full appearance-none cursor-pointer slider" aria-label="Rest Duration">
         </div>
 
-        <!-- Volume Sliders -->
-        <div class="bg-primary/30 rounded-3xl p-4 shadow-xl">
-          <h2 class="text-2xl font-bold mb-2">Volume Controls</h2>
+        <!-- 2) Volume Controls -->
+        <div class="bg-primary/30 rounded-3xl p-4 shadow-xl text-left">
+          <h2 class="text-2xl font-bold mb-4 text-center">Volume Controls</h2>
 
           <label class="flex items-center justify-between mb-6 cursor-pointer">
-            <span class="text-lg">Sound Effects</span>
+            <span class="text-lg">Sounds</span>
             <div class="relative">
-              <input type="checkbox" id="toggle-sounds" class="sr-only peer" aria-label="Sound Effects" />
+              <input type="checkbox" id="toggle-sounds" class="sr-only peer" aria-label="Sounds" />
               <div class="w-14 h-8 bg-gray-600 peer-checked:bg-accent rounded-full shadow-inner transition"></div>
               <div class="dot absolute w-6 h-6 bg-bg rounded-full shadow top-1 left-1 peer-checked:translate-x-6 transition"></div>
             </div>
           </label>
-          
-          <div class="mb-4">
+
+          <div class="mb-6">
             <div class="flex items-center justify-between mb-2">
               <label class="text-lg" for="voice-volume-slider">Guidance Voice</label>
-              <span id="voice-volume-value" class="text-xl font-mono bg-bg px-2 py-2 rounded-lg">100%</span>
+              <span id="voice-volume-value" class="text-xl font-mono bg-bg px-3 py-2 rounded-lg">100%</span>
             </div>
-            <input type="range" id="voice-volume-slider" min="0" max="100" value="100" 
-                   class="w-full h-3 bg-gray-700 rounded-full appearance-none cursor-pointer slider" aria-label="Guidance Voice Volume">
+            <input type="range" id="voice-volume-slider" min="0" max="100" step="5" value="100"
+                   class="w-full h-3 bg-gray-700 rounded-full appearance-none cursor-pointer slider" aria-label="Guidance Voice">
           </div>
 
           <div>
             <div class="flex items-center justify-between mb-2">
               <label class="text-lg" for="beep-volume-slider">Countdown Beeps</label>
-              <span id="beep-volume-value" class="text-xl font-mono bg-bg px-2 py-2 rounded-lg">100%</span>
+              <span id="beep-volume-value" class="text-xl font-mono bg-bg px-3 py-2 rounded-lg">100%</span>
             </div>
-            <input type="range" id="beep-volume-slider" min="0" max="100" value="100" 
-                   class="w-full h-3 bg-gray-700 rounded-full appearance-none cursor-pointer slider" aria-label="Countdown Beep Volume">
+            <input type="range" id="beep-volume-slider" min="0" max="100" step="5" value="100"
+                   class="w-full h-3 bg-gray-700 rounded-full appearance-none cursor-pointer slider" aria-label="Countdown Beeps">
           </div>
         </div>
 
-        <!-- Theme Selector -->
-        <div class="bg-primary/30 rounded-3xl p-4 shadow-xl">
-          <h2 class="text-2xl font-bold mb-4">Theme</h2>
+        <!-- 3) Theme -->
+        <div class="bg-primary/30 rounded-3xl p-4 shadow-xl text-left">
+          <h2 class="text-2xl font-bold mb-4 text-center">Theme</h2>
           <div class="flex items-center justify-between mb-4">
-            <label class="text-lg" for="theme-selector">App Theme</label>
-            <select id="theme-selector" class="bg-bg text-light rounded-md px-3 py-2" aria-label="Theme selector">
-              <option value="system">System (Default)</option>
-              <option value="dark">Dark</option>
+            <label class="text-lg" for="theme-selector">Theme</label>
+            <select id="theme-selector" class="bg-bg text-light rounded-md px-3 py-2" aria-label="Theme">
+              <option value="system">System</option>
               <option value="light">Light</option>
+              <option value="dark">Dark</option>
             </select>
           </div>
-
           <div class="flex items-center justify-between">
-            <label class="text-lg" for="light-color-select">Light Theme Colour</label>
-            <select id="light-color-select" class="bg-bg text-light rounded-md px-3 py-2" aria-label="Light theme colour">
+            <label class="text-lg" for="light-color-select">Light Theme</label>
+            <select id="light-color-select" class="bg-bg text-light rounded-md px-3 py-2" aria-label="Light Theme">
               <option value="#16A34A">Green</option>
               <option value="#3B82F6">Blue</option>
               <option value="#F43F5E">Rose</option>
               <option value="#10B981">Emerald</option>
               <option value="#F59E0B">Amber</option>
               <option value="#6366F1">Indigo</option>
-              <option value="#14B8A6">Teal</option>
             </select>
           </div>
         </div>
 
-        <!-- Feature Toggles -->
-        <div class="bg-primary/30 rounded-3xl p-4 shadow-xl">
-          <h2 class="text-2xl font-bold mb-4">Features</h2>
-          
+        <!-- 4) Features -->
+        <div class="bg-primary/30 rounded-3xl p-4 shadow-xl text-left">
+          <h2 class="text-2xl font-bold mb-4 text-center">Features</h2>
+
           <label class="flex items-center justify-between mb-6 cursor-pointer">
             <span class="text-lg">Vibration on Rest/Start</span>
             <div class="relative">
-              <input type="checkbox" id="toggle-vibration" checked class="sr-only peer" aria-label="Vibration on Rest/Start" />
+              <input type="checkbox" id="toggle-vibration" class="sr-only peer" aria-label="Vibration on Rest/Start" />
               <div class="w-14 h-8 bg-gray-600 peer-checked:bg-accent rounded-full shadow-inner transition"></div>
               <div class="dot absolute w-6 h-6 bg-bg rounded-full shadow top-1 left-1 peer-checked:translate-x-6 transition"></div>
             </div>
           </label>
 
-          <label class="flex items-center justify-between mb-6 cursor-pointer">
+          <label class="flex items-center justify-between cursor-pointer">
             <span class="text-lg">Screen Wake Lock</span>
             <div class="relative">
-              <input type="checkbox" id="toggle-wakelock" checked class="sr-only peer" aria-label="Screen Wake Lock" />
+              <input type="checkbox" id="toggle-wakelock" class="sr-only peer" aria-label="Screen Wake Lock" />
               <div class="w-14 h-8 bg-gray-600 peer-checked:bg-accent rounded-full shadow-inner transition"></div>
               <div class="dot absolute w-6 h-6 bg-bg rounded-full shadow top-1 left-1 peer-checked:translate-x-6 transition"></div>
             </div>
@@ -424,9 +420,9 @@ function loadOptions() {
   beepSlider.value = settings.beepVolume ?? 100;
   beepValue.textContent = `${beepSlider.value}%`;
 
-  document.getElementById('toggle-vibration').checked = settings.vibration ?? true;
+  document.getElementById('toggle-vibration').checked = settings.vibration ?? false;
   document.getElementById('toggle-wakelock').checked = settings.wakelock ?? true;
-  document.getElementById('toggle-sounds').checked = settings.sounds ?? false;
+  document.getElementById('toggle-sounds').checked = settings.sounds ?? true;
 
   // Theme select defaults
   const defaultTheme = settings.theme ?? 'system';
@@ -450,7 +446,9 @@ function loadOptions() {
       voiceVolume: parseInt(voiceSlider.value),
       beepVolume: parseInt(beepSlider.value),
       theme: themeSelector ? themeSelector.value : 'system',
-      lightColor: lightColorSelect ? lightColorSelect.value : getComputedStyle(document.documentElement).getPropertyValue('--default-accent').trim(),
+      lightColor: lightColorSelect
+        ? lightColorSelect.value
+        : (getComputedStyle(document.documentElement).getPropertyValue('--default-accent').trim() || '#16A34A'),
       vibration: document.getElementById('toggle-vibration').checked,
       wakelock: document.getElementById('toggle-wakelock').checked,
       sounds: document.getElementById('toggle-sounds').checked
