@@ -771,10 +771,10 @@ function startTimer() {
       <div class="p-4 bg-primary/80 flex justify-between items-center">
         <button id="back-to-preview-btn" class="text-lg text-light underline" aria-label="Back to Preview">← Back</button>
         <div class="text-sm font-medium text-light/90 bg-primary/40 px-3 py-2 rounded-xl" data-wakelock-indicator aria-live="polite">Wake Lock</div>
-        <button id="pause-btn" class="text-lg text-light underline" aria-label="Pause workout">Pause</button>
+        <div class="text-sm text-light/90" id="tap-hint" aria-label="Tap anywhere to pause">Tap anywhere to pause</div>
       </div>
 
-      <div class="flex-1 min-h-0 flex flex-col items-center justify-center p-8 text-center">
+      <div id="workout-area" class="flex-1 min-h-0 flex flex-col items-center justify-center p-8 text-center" aria-label="Workout area">
         <p id="phase-label" class="text-xl md:text-2xl text-light/90 mb-4">Get ready</p>
         <h1 id="exercise-name" class="text-4xl md:text-6xl font-bold mb-4">${currentWorkout.name || 'Workout'}</h1>
         <div id="time-remaining" class="text-7xl md:text-8xl font-mono font-bold mb-6">0:00</div>
@@ -787,27 +787,32 @@ function startTimer() {
           <span class="mx-3">•</span>
           <span id="overall-eta">Est. ${formatClock(estimatedTotalSeconds)}</span>
         </div>
+
+        <div id="next-up" class="mt-8 bg-primary/30 rounded-3xl p-5 w-full max-w-xl text-left">
+          <p class="text-xl font-bold mb-2">Up next:</p>
+          <div id="next-up-lines" class="text-lg text-light/90 space-y-1"></div>
+        </div>
       </div>
 
-      <div id="pause-overlay" class="hidden fixed inset-0 bg-bg/95 text-light">
+      <div id="pause-overlay" class="hidden fixed inset-0 bg-bg/95 text-light" aria-label="Paused overlay">
         <div class="h-full flex flex-col items-center justify-center p-8 text-center">
           <h2 class="text-5xl md:text-6xl font-bold mb-6">Paused</h2>
           <div class="text-base font-medium text-light/90 bg-primary/40 px-4 py-3 rounded-xl mb-8" data-wakelock-indicator aria-live="polite">Wake Lock</div>
-          <button id="resume-btn" class="text-2xl text-light underline" aria-label="Resume workout">Resume</button>
+          <p class="text-2xl text-light/90">Tap anywhere to resume</p>
         </div>
       </div>
     </div>
   `;
 
   const backBtn = document.getElementById('back-to-preview-btn');
-  const pauseBtn = document.getElementById('pause-btn');
-  const resumeBtn = document.getElementById('resume-btn');
   const pauseOverlay = document.getElementById('pause-overlay');
+  const workoutArea = document.getElementById('workout-area');
   const phaseLabel = document.getElementById('phase-label');
   const exerciseName = document.getElementById('exercise-name');
   const timeRemainingEl = document.getElementById('time-remaining');
   const progressBar = document.getElementById('progress-bar');
   const progressText = document.getElementById('progress-text');
+  const nextUpLines = document.getElementById('next-up-lines');
 
   function goBack() {
     stopActiveTimer();
@@ -817,8 +822,9 @@ function startTimer() {
 
   backBtn.addEventListener('click', goBack);
 
-  pauseBtn.addEventListener('click', () => {
+  function pauseWorkout() {
     if (!timerState || timerState.completed) return;
+    if (timerState.paused) return;
     timerState.paused = true;
     timerState.pauseStartedAt = performance.now();
     try {
@@ -828,19 +834,74 @@ function startTimer() {
     }
     pauseOverlay.classList.remove('hidden');
     updateWakeLockIndicators();
-  });
+  }
 
-  resumeBtn.addEventListener('click', () => {
+  function resumeWorkout() {
     if (!timerState || timerState.completed) return;
-    if (timerState.paused) {
-      const pauseDelta = performance.now() - (timerState.pauseStartedAt || performance.now());
-      timerState.phaseEndsAt += pauseDelta;
-    }
+    if (!timerState.paused) return;
+    const pauseDelta = performance.now() - (timerState.pauseStartedAt || performance.now());
+    timerState.phaseEndsAt += pauseDelta;
     timerState.paused = false;
     timerState.pauseStartedAt = null;
     pauseOverlay.classList.add('hidden');
     updateWakeLockIndicators();
+  }
+
+  // Tap anywhere in the workout area to pause (header is excluded so Back won't pause)
+  workoutArea.addEventListener('click', pauseWorkout);
+  // Tap anywhere on the pause overlay to resume
+  pauseOverlay.addEventListener('click', resumeWorkout);
+
+  // Prevent accidental pause when pressing Back
+  backBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
   });
+
+  function renderNextUp() {
+    if (!nextUpLines) return;
+    nextUpLines.innerHTML = '';
+
+    const addLine = (text) => {
+      const p = document.createElement('p');
+      p.textContent = text;
+      nextUpLines.appendChild(p);
+    };
+
+    const getExerciseSeconds = (index) => {
+      const ex = currentWorkout.exercises[index];
+      return ex?.durationSeconds || currentWorkout.defaultWorkSeconds || 30;
+    };
+
+    if (!timerState || timerState.completed) return;
+
+    // Prepare: first exercise is next
+    if (timerState.phase === 'prepare') {
+      const firstEx = currentWorkout.exercises[0];
+      addLine(`${firstEx?.name || 'Exercise 1'} ${getExerciseSeconds(0)}s`);
+      return;
+    }
+
+    // Work: show rest (if any), then next exercise (if any)
+    if (timerState.phase === 'work') {
+      const isLast = timerState.exerciseIndex >= totalExercises - 1;
+      if (restSeconds > 0) {
+        addLine(`Rest ${restSeconds}s`);
+      }
+      if (!isLast) {
+        const nextIndex = timerState.exerciseIndex + 1;
+        const nextEx = currentWorkout.exercises[nextIndex];
+        addLine(`${nextEx?.name || `Exercise ${nextIndex + 1}`} ${getExerciseSeconds(nextIndex)}s`);
+      }
+      return;
+    }
+
+    // Rest: next is the upcoming exercise
+    if (timerState.phase === 'rest') {
+      const nextIndex = timerState.exerciseIndex;
+      const nextEx = currentWorkout.exercises[nextIndex];
+      addLine(`${nextEx?.name || `Exercise ${nextIndex + 1}`} ${getExerciseSeconds(nextIndex)}s`);
+    }
+  }
 
   function setPhase(nextPhase, nextExerciseIndex, durationSeconds) {
     timerState.phase = nextPhase;
@@ -876,6 +937,7 @@ function startTimer() {
     }
 
     updateWakeLockIndicators();
+    renderNextUp();
   }
 
   function completeWorkout() {
