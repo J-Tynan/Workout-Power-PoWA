@@ -1402,7 +1402,7 @@ function startFireworksCelebration(_anchorEl, durationMs = 10000) {
   launch();
   // Start with two rockets total: one now, one shortly after.
   window.setTimeout(launch, 180);
-  const launchId = window.setInterval(launch, 900);
+  const launchId = window.setInterval(launch, 1500);
 
   const stop = () => {
     if (stopped) return;
