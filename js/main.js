@@ -615,6 +615,15 @@ function loadOptions() {
           <h2 class="text-2xl font-bold mb-4 text-center">Features</h2>
 
           <label class="flex items-center justify-between mb-6 cursor-pointer">
+            <span class="text-lg">Celebrations</span>
+            <div class="relative">
+              <input type="checkbox" id="toggle-celebrations" class="sr-only peer" aria-label="Celebrations" />
+              <div class="w-14 h-8 bg-gray-600 peer-checked:bg-accent rounded-full shadow-inner transition"></div>
+              <div class="dot absolute w-6 h-6 bg-bg rounded-full shadow top-1 left-1 peer-checked:translate-x-6 transition"></div>
+            </div>
+          </label>
+
+          <label class="flex items-center justify-between mb-6 cursor-pointer">
             <span class="text-lg">Vibration on Rest/Start</span>
             <div class="relative">
               <input type="checkbox" id="toggle-vibration" class="sr-only peer" aria-label="Vibration on Rest/Start" />
@@ -669,6 +678,7 @@ function loadOptions() {
   document.getElementById('toggle-vibration').checked = settings.vibration ?? false;
   document.getElementById('toggle-wakelock').checked = settings.wakelock ?? true;
   document.getElementById('toggle-sounds').checked = settings.sounds ?? true;
+  document.getElementById('toggle-celebrations').checked = settings.celebrations ?? true;
 
   // Theme select defaults
   const defaultTheme = settings.theme ?? 'system';
@@ -698,7 +708,8 @@ function loadOptions() {
         : (getComputedStyle(document.documentElement).getPropertyValue('--default-accent').trim() || '#16A34A'),
       vibration: document.getElementById('toggle-vibration').checked,
       wakelock: document.getElementById('toggle-wakelock').checked,
-      sounds: document.getElementById('toggle-sounds').checked
+      sounds: document.getElementById('toggle-sounds').checked,
+      celebrations: document.getElementById('toggle-celebrations').checked
     };
     localStorage.setItem(SETTINGS_KEY, JSON.stringify(current));
   }
@@ -736,7 +747,7 @@ function loadOptions() {
       saveSettings();
     });
   }
-  ['vibration', 'wakelock', 'sounds'].forEach(id => {
+  ['celebrations', 'vibration', 'wakelock', 'sounds'].forEach(id => {
     document.getElementById(`toggle-${id}`).addEventListener('change', saveSettings);
   });
 
@@ -943,13 +954,19 @@ function startTimer() {
   function completeWorkout() {
     stopActiveTimer();
     setWakeLockWanted(false);
+    const completionSettings = loadSettings();
     app.innerHTML = `
       <div class="flex flex-col items-center justify-center h-full p-8 text-center">
-        <h1 class="text-5xl md:text-7xl font-bold mb-6">Workout Complete!</h1>
+        <h1 id="completion-title" class="text-5xl md:text-7xl font-bold mb-6">Workout Complete!</h1>
         <p class="text-2xl text-light/80 mb-10">Nice work.</p>
         <button id="back-to-menu-btn" class="text-2xl text-light underline" aria-label="Back to Menu">Back to Menu</button>
       </div>
     `;
+
+    if ((completionSettings.celebrations ?? true) && !prefersReducedMotion()) {
+      const titleEl = document.getElementById('completion-title');
+      runConfettiBurstFromElement(titleEl);
+    }
     document.getElementById('back-to-menu-btn').addEventListener('click', () => window.WorkoutApp.loadWorkoutList());
   }
 
@@ -1059,4 +1076,72 @@ if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('sw.js').catch(err => {
     console.error('Service worker registration failed:', err);
   });
+}
+
+function prefersReducedMotion() {
+  return !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+}
+
+function runConfettiBurstFromElement(anchorEl) {
+  if (!anchorEl) return;
+  if (prefersReducedMotion()) return;
+
+  const rect = anchorEl.getBoundingClientRect();
+  const originX = rect.left + rect.width / 2;
+  const originY = rect.top + rect.height / 2;
+
+  const container = document.createElement('div');
+  container.style.position = 'fixed';
+  container.style.inset = '0';
+  container.style.pointerEvents = 'none';
+  container.style.overflow = 'hidden';
+  container.style.zIndex = '9999';
+
+  document.body.appendChild(container);
+
+  const colors = [
+    'rgb(var(--color-accent))',
+    'rgb(var(--color-light))',
+    'rgb(var(--color-primary))'
+  ];
+
+  const pieceCount = 70;
+  for (let i = 0; i < pieceCount; i++) {
+    const piece = document.createElement('div');
+    const size = 6 + Math.random() * 8;
+    piece.style.position = 'absolute';
+    piece.style.left = `${originX}px`;
+    piece.style.top = `${originY}px`;
+    piece.style.width = `${size}px`;
+    piece.style.height = `${size * 0.55}px`;
+    piece.style.borderRadius = '2px';
+    piece.style.background = colors[i % colors.length];
+    piece.style.opacity = '1';
+    piece.style.transform = 'translate(-50%, -50%)';
+    container.appendChild(piece);
+
+    const angle = (Math.PI * 2) * (i / pieceCount) + (Math.random() * 0.6 - 0.3);
+    const velocity = 260 + Math.random() * 420;
+    const dx = Math.cos(angle) * velocity;
+    const dy = Math.sin(angle) * velocity - (250 + Math.random() * 250);
+    const rotate = (Math.random() * 720 - 360);
+    const duration = 1200 + Math.random() * 900;
+
+    piece.animate(
+      [
+        { transform: 'translate(-50%, -50%) translate(0px, 0px) rotate(0deg)', opacity: 1 },
+        { transform: `translate(-50%, -50%) translate(${dx}px, ${dy}px) rotate(${rotate}deg)`, opacity: 1, offset: 0.55 },
+        { transform: `translate(-50%, -50%) translate(${dx * 1.05}px, ${dy + 520}px) rotate(${rotate * 1.2}deg)`, opacity: 0 }
+      ],
+      {
+        duration,
+        easing: 'cubic-bezier(0.2, 0.8, 0.2, 1)',
+        fill: 'forwards'
+      }
+    );
+  }
+
+  window.setTimeout(() => {
+    container.remove();
+  }, 2600);
 }
