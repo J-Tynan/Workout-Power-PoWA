@@ -1350,7 +1350,7 @@ function launchFirework(container) {
 
   // Trigger the explosion a touch before the animation ends so it doesn't linger.
   let exploded = false;
-  const explodeLeadMs = 140;
+  const explodeLeadMs = 180;
   const explodeTimerId = window.setTimeout(() => {
     if (exploded) return;
     exploded = true;
