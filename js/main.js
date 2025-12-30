@@ -110,13 +110,43 @@ function loadSettings() {
   }
 }
 
+function toRgbTripletString(color) {
+  if (!color) return null;
+  const c = String(color).trim();
+
+  // Already an RGB triplet (e.g. "248 250 252")
+  if (/^\d{1,3}\s+\d{1,3}\s+\d{1,3}$/.test(c)) return c;
+
+  // Hex forms: #RGB or #RRGGBB
+  if (c[0] === '#') {
+    let hex = c.slice(1);
+    if (hex.length === 3) {
+      hex = hex.split('').map(ch => ch + ch).join('');
+    }
+    if (hex.length !== 6) return null;
+    const r = parseInt(hex.slice(0, 2), 16);
+    const g = parseInt(hex.slice(2, 4), 16);
+    const b = parseInt(hex.slice(4, 6), 16);
+    if ([r, g, b].some(n => Number.isNaN(n))) return null;
+    return `${r} ${g} ${b}`;
+  }
+
+  return null;
+}
+
 function applyPalette(palette) {
   const root = document.documentElement;
   if (!palette) return;
-  root.style.setProperty('--color-bg', palette.bg);
-  root.style.setProperty('--color-primary', palette.primary);
-  root.style.setProperty('--color-light', palette.light);
-  root.style.setProperty('--color-accent', palette.accent);
+
+  const bg = toRgbTripletString(palette.bg);
+  const primary = toRgbTripletString(palette.primary);
+  const light = toRgbTripletString(palette.light);
+  const accent = toRgbTripletString(palette.accent);
+
+  if (bg) root.style.setProperty('--color-bg', bg);
+  if (primary) root.style.setProperty('--color-primary', primary);
+  if (light) root.style.setProperty('--color-light', light);
+  if (accent) root.style.setProperty('--color-accent', accent);
 }
 
 function getLightPalette(color) {

@@ -20,10 +20,11 @@
         extend: {
 					colors: {
 						// Colors are driven by CSS variables so we can swap palettes at runtime
-						bg: 'var(--color-bg)',
-						primary: 'var(--color-primary)',
-						accent: 'var(--color-accent)',
-						light: 'var(--color-light)',
+						// Use rgb(var(--color-*) / <alpha-value>) so Tailwind opacity modifiers (e.g. bg-primary/30) work reliably.
+						bg: 'rgb(var(--color-bg) / <alpha-value>)',
+						primary: 'rgb(var(--color-primary) / <alpha-value>)',
+						accent: 'rgb(var(--color-accent) / <alpha-value>)',
+						light: 'rgb(var(--color-light) / <alpha-value>)',
 					},
           fontFamily: {
             sans: ['system-ui', 'sans-serif'],
@@ -37,18 +38,19 @@
 	<style>
 	:root {
 		/* Base palette (Light). JS can override these for the selected light accent. */
-		--color-bg: #f8fafc; /* slate-50 */
-		--color-primary: #e6f4ea; /* soft light background */
-		--color-accent: #16A34A; /* green-600 */
-		--color-light: #111827; /* text/dark */
+		/* Store as space-separated RGB so Tailwind alpha modifiers work. */
+		--color-bg: 248 250 252; /* slate-50 */
+		--color-primary: 230 244 234; /* soft light background */
+		--color-accent: 22 163 74; /* green-600 */
+		--color-light: 17 24 39; /* text/dark */
 		--default-accent: #16A34A;
 	}
 	/* Dark theme override (Tailwind 'dark' mode uses html.dark). */
 	html.dark {
-		--color-bg: #07140d;
-		--color-primary: #0f3d1a;
-		--color-accent: #16a34a;
-		--color-light: #c7f9d0;
+		--color-bg: 7 20 13;
+		--color-primary: 15 61 26;
+		--color-accent: 22 163 74;
+		--color-light: 199 249 208;
 	}
 
 	html, body { height: 100%; }
@@ -72,24 +74,24 @@
 		height: 28px;
 		width: 28px;
 		border-radius: 50%;
-		background: var(--color-accent);
+		background: rgb(var(--color-accent));
 		cursor: pointer;
-		box-shadow: 0 0 10px var(--color-accent);
+		box-shadow: 0 0 10px rgb(var(--color-accent));
 	  }
 
 	  input[type="range"].slider::-moz-range-thumb {
 		height: 28px;
 		width: 28px;
 		border-radius: 50%;
-		background: var(--color-accent);
+		background: rgb(var(--color-accent));
 		cursor: pointer;
 		border: none;
-		box-shadow: 0 0 10px var(--color-accent);
+		box-shadow: 0 0 10px rgb(var(--color-accent));
 	  }
 
-	  /* Toggle switch animation */
+	  /* Toggle switch animation (Tailwind CDN can't process @apply, so use plain CSS) */
 	  input:checked + div {
-		@apply bg-accent;
+		background: rgb(var(--color-accent));
 	  }
 	  input:checked + div + .dot {
 		transform: translateX(24px);
