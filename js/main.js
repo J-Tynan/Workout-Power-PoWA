@@ -1136,7 +1136,7 @@ let activeCelebration = null;
 let celebrationIndex = 0;
 
 // Celebration tuning (dev-friendly constants)
-const CONFETTI_BURST_INTERVAL_MS = 500;
+const CONFETTI_BURST_INTERVAL_MS = 700;
 
 function getAnchorCenter(anchorEl) {
   const rect = anchorEl.getBoundingClientRect();
@@ -1326,9 +1326,10 @@ function launchFirework(container) {
   rocket.style.borderRadius = '9999px';
   rocket.style.transform = 'translate(-50%, -50%)';
   rocket.style.background = 'white';
-  rocket.style.opacity = '0.95';
-  rocket.style.filter = 'brightness(2)';
-  rocket.style.boxShadow = '0 0 14px rgba(255,255,255,0.8)';
+  rocket.style.opacity = '0.85';
+  // Keep the rocket readable, but avoid the pre-explosion "HDR white" look.
+  rocket.style.filter = 'brightness(1.35)';
+  rocket.style.boxShadow = '0 0 10px rgba(255,255,255,0.55)';
   rocket.style.mixBlendMode = 'screen';
   container.appendChild(rocket);
 
@@ -1340,12 +1341,27 @@ function launchFirework(container) {
       // Mid: arc/curve
       { transform: `translate(-50%, -50%) translate(${curveX - startX}px, ${curveY - startY}px) scaleX(0.18) scaleY(2.0)`, opacity: 1, offset: 0.55 },
       // Near end: becomes a bright dot right before explosion
-      { transform: `translate(-50%, -50%) translate(${finalX - startX}px, ${finalY - startY}px) scale(1.05)`, opacity: 1 }
+      { transform: `translate(-50%, -50%) translate(${finalX - startX}px, ${finalY - startY}px) scale(1.02)`, opacity: 0.95, offset: 0.86 },
+      // Fade out quickly to avoid a noticeable "hang" before the explosion flash
+      { transform: `translate(-50%, -50%) translate(${finalX - startX}px, ${finalY - startY}px) scale(0.78)`, opacity: 0.18 }
     ],
     { duration, easing: 'cubic-bezier(0.15, 0.9, 0.2, 1)', fill: 'forwards' }
   );
 
+  // Trigger the explosion a touch before the animation ends so it doesn't linger.
+  let exploded = false;
+  const explodeLeadMs = 140;
+  const explodeTimerId = window.setTimeout(() => {
+    if (exploded) return;
+    exploded = true;
+    rocket.remove();
+    spawnFireworkExplosion(container, finalX, finalY);
+  }, Math.max(0, duration - explodeLeadMs));
+
   anim.addEventListener('finish', () => {
+    window.clearTimeout(explodeTimerId);
+    if (exploded) return;
+    exploded = true;
     rocket.remove();
     spawnFireworkExplosion(container, finalX, finalY);
   });
