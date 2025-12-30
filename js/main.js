@@ -1144,7 +1144,7 @@ let activeCelebration = null;
 let celebrationIndex = 0;
 
 // Celebration tuning (dev-friendly constants)
-const CONFETTI_BURST_INTERVAL_MS = 1000;
+const CONFETTI_BURST_INTERVAL_MS = 900;
 
 function getAnchorCenter(anchorEl) {
   const rect = anchorEl.getBoundingClientRect();
