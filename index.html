@@ -15,6 +15,7 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
+		darkMode: 'class',
       theme: {
         extend: {
 					colors: {
@@ -32,40 +33,33 @@
     }
   </script>
 
-	<!-- Theme variables: default palette + dark/light overrides. JS will update --color-accent for selected light color. -->
+	<!-- Theme variables: base (light) palette + dark override via html.dark. JS will update vars at runtime. -->
 	<style>
 	:root {
-		--color-bg: #0D2818; /* deep green background */
-		--color-primary: #1B5E20; /* dark green */
-		/* Use a Tailwind-safe green as the default accent */
-		--color-accent: #16A34A; /* green-600 */
-		--color-light: #C8E6C9;
-		--default-accent: #16A34A;
-	}
-	/* Dark theme overrides */
-	[data-theme="dark"] {
-		--color-bg: #07140d;
-		--color-primary: #0f3d1a;
-		--color-accent: #16a34a; /* emerald-500-ish */
-		--color-light: #c7f9d0;
-	}
-	/* Light theme base — accent is overridden by user selection via JS */
-	[data-theme="light"] {
+		/* Base palette (Light). JS can override these for the selected light accent. */
 		--color-bg: #f8fafc; /* slate-50 */
 		--color-primary: #e6f4ea; /* soft light background */
+		--color-accent: #16A34A; /* green-600 */
 		--color-light: #111827; /* text/dark */
-		/* --color-accent will be set dynamically to the user's selected light accent */
+		--default-accent: #16A34A;
+	}
+	/* Dark theme override (Tailwind 'dark' mode uses html.dark). */
+	html.dark {
+		--color-bg: #07140d;
+		--color-primary: #0f3d1a;
+		--color-accent: #16a34a;
+		--color-light: #c7f9d0;
 	}
 
 	html, body { height: 100%; }
 	body { margin: 0; overflow: hidden; }
 	/*
-	  Scroll inside #app for reliable touch scrolling in mobile/PWA.
-	  This avoids common issues where body scrolling is blocked in standalone mode.
+	  Body scrolling is disabled for reliable standalone/PWA behavior.
+	  Each view inside #app is responsible for its own scrolling (overflow-y-auto).
 	*/
 	#app {
-		height: 100vh;
-		overflow-y: auto;
+		height: 100dvh;
+		overflow: hidden;
 		-webkit-overflow-scrolling: touch;
 		overscroll-behavior-y: contain;
 		touch-action: pan-y;
@@ -78,19 +72,19 @@
 		height: 28px;
 		width: 28px;
 		border-radius: 50%;
-		background: #4CAF50;
+		background: var(--color-accent);
 		cursor: pointer;
-		box-shadow: 0 0 10px rgba(76, 175, 80, 0.8);
+		box-shadow: 0 0 10px var(--color-accent);
 	  }
 
 	  input[type="range"].slider::-moz-range-thumb {
 		height: 28px;
 		width: 28px;
 		border-radius: 50%;
-		background: #4CAF50;
+		background: var(--color-accent);
 		cursor: pointer;
 		border: none;
-		box-shadow: 0 0 10px rgba(76, 175, 80, 0.8);
+		box-shadow: 0 0 10px var(--color-accent);
 	  }
 
 	  /* Toggle switch animation */
@@ -102,8 +96,8 @@
 	  }
 </style>
 </head>
-<body class="bg-bg text-white flex flex-col">
-  <div id="app" class="flex-1 flex flex-col"></div>
+<body class="bg-bg text-light flex flex-col">
+	<div id="app" class="flex-1 min-h-0 flex flex-col"></div>
 
   <!-- App modules -->
   <script type="module" src="js/main.js"></script>

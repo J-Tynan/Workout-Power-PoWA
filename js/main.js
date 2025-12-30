@@ -4,6 +4,95 @@ const app = document.getElementById('app');
 let currentWorkout = null;
 let currentFilename = null;
 
+const SETTINGS_KEY = 'workoutPowerSettings';
+
+// Light palette map for selectable accents (keys are normalized lowercase)
+const LIGHT_THEME_PALETTES = {
+  '#16a34a': { accent: '#16a34a', bg: '#f0fdf4', primary: '#dcfce7', light: '#0f172a' }, // Green
+  '#3b82f6': { accent: '#2563eb', bg: '#eff6ff', primary: '#dbeafe', light: '#1e3a8a' }, // Blue
+  '#f43f5e': { accent: '#f43f5e', bg: '#fff1f2', primary: '#ffe4ec', light: '#581c2e' }, // Rose
+  '#10b981': { accent: '#059669', bg: '#ecfdf5', primary: '#d1fae5', light: '#064e3b' }, // Emerald
+  '#f59e0b': { accent: '#d97706', bg: '#fff7ed', primary: '#ffedd5', light: '#78350f' }, // Amber
+  '#6366f1': { accent: '#4c1d95', bg: '#eef2ff', primary: '#e0e7ff', light: '#312e81' }, // Indigo
+  '#14b8a6': { accent: '#0d9488', bg: '#ecfeff', primary: '#ccfbf1', light: '#0f766e' }  // Teal
+};
+const DEFAULT_DARK_PALETTE = { accent: '#16a34a', bg: '#07140d', primary: '#0f3d1a', light: '#c7f9d0' };
+const DEFAULT_LIGHT_PALETTE = LIGHT_THEME_PALETTES['#16a34a'];
+
+function loadSettings() {
+  const saved = localStorage.getItem(SETTINGS_KEY);
+  if (!saved) return {};
+  try {
+    const parsed = JSON.parse(saved);
+    return parsed && typeof parsed === 'object' ? parsed : {};
+  } catch {
+    return {};
+  }
+}
+
+function applyPalette(palette) {
+  const root = document.documentElement;
+  if (!palette) return;
+  root.style.setProperty('--color-bg', palette.bg);
+  root.style.setProperty('--color-primary', palette.primary);
+  root.style.setProperty('--color-light', palette.light);
+  root.style.setProperty('--color-accent', palette.accent);
+}
+
+function getLightPalette(color) {
+  if (!color) return DEFAULT_LIGHT_PALETTE;
+  const normalized = color.trim().toLowerCase();
+  return LIGHT_THEME_PALETTES[normalized] || DEFAULT_LIGHT_PALETTE;
+}
+
+// ApplyTheme: sets data-theme and swaps palette vars. When theme=system, uses prefers-color-scheme.
+function applyTheme(theme, lightColor) {
+  const root = document.documentElement;
+  const t = theme || 'system';
+
+  if (t === 'system') {
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    if (prefersDark) {
+      root.classList.add('dark');
+      applyPalette(DEFAULT_DARK_PALETTE);
+    } else {
+      root.classList.remove('dark');
+      applyPalette(getLightPalette(lightColor));
+    }
+    return;
+  }
+
+  if (t === 'dark') {
+    root.classList.add('dark');
+    applyPalette(DEFAULT_DARK_PALETTE);
+    return;
+  }
+
+  if (t === 'light') {
+    root.classList.remove('dark');
+    applyPalette(getLightPalette(lightColor));
+  }
+}
+
+function applyThemeFromStorage() {
+  const settings = loadSettings();
+  applyTheme(settings.theme ?? 'system', settings.lightColor ?? '#16A34A');
+}
+
+// React to OS/browser scheme changes only when user chose Theme=System.
+function handleSystemThemeChange() {
+  const settings = loadSettings();
+  if ((settings.theme ?? 'system') !== 'system') return;
+  applyTheme('system', settings.lightColor ?? '#16A34A');
+}
+
+const colorSchemeQuery = window.matchMedia('(prefers-color-scheme: dark)');
+if (colorSchemeQuery.addEventListener) {
+  colorSchemeQuery.addEventListener('change', handleSystemThemeChange);
+} else if (colorSchemeQuery.addListener) {
+  colorSchemeQuery.addListener(handleSystemThemeChange);
+}
+
 // Namespace for global functions
 window.WorkoutApp = {};
 
@@ -14,16 +103,18 @@ async function loadWorkoutList() {
     const workouts = await response.json();
 
     app.innerHTML = `
-      <div class="p-6 max-w-4xl mx-auto text-center">
-        <div class="flex justify-between items-center mb-6">
+      <div class="p-6 max-w-4xl mx-auto text-center flex flex-col h-full min-h-0">
+        <div class="flex justify-between items-center mb-6 flex-none">
           <h1 class="text-4xl md:text-6xl font-bold">Workout Power PWA</h1>
           <button id="options-btn" class="text-xl text-light underline" aria-label="Options">
             Options
           </button>
         </div>
-        <p class="text-light text-xl opacity-90 text-center mb-12">Choose a workout to begin</p>
-        
-        <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-3" id="workout-list-grid"></div>
+        <p class="text-light text-xl opacity-90 text-center mb-8 flex-none">Choose a workout to begin</p>
+
+        <div class="flex-1 min-h-0 overflow-y-auto">
+          <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-3 pb-6" id="workout-list-grid"></div>
+        </div>
       </div>
     `;
 
@@ -62,9 +153,8 @@ async function loadWorkoutPreview(filename) {
     currentFilename = filename;
 
     // Load settings for rest time
-    const saved = localStorage.getItem('workoutPowerSettings');
-    const settings = saved ? JSON.parse(saved) : {};
-    const restSeconds = settings.restDuration || 10;
+    const settings = loadSettings();
+    const restSeconds = settings.restDuration ?? 10;
 
     // Calculate total time
     const workTime = currentWorkout.exercises.reduce((sum, ex) => 
@@ -76,7 +166,7 @@ async function loadWorkoutPreview(filename) {
     const totalTimeStr = `${totalMins}:${totalSecs.toString().padStart(2, '0')}`;
 
     app.innerHTML = `
-      <div class="flex flex-col h-full">
+      <div class="flex flex-col h-full min-h-0">
         <!-- Header -->
         <div class="p-4 bg-primary/80 flex justify-between items-center">
           <button id="back-to-menu-btn" class="text-light underline text-lg" aria-label="Back to Menu">
@@ -90,7 +180,7 @@ async function loadWorkoutPreview(filename) {
 
         <!-- Carousel with Rest indicators -->
         <!-- Use px-6 / pb-6 so the scroll container edges match the gap (gap-6) between cards -->
-        <div class="flex-1 overflow-x-auto px-6 py-6">
+        <div class="flex-1 min-h-0 overflow-x-auto px-6 py-6">
           <div class="flex gap-6 pb-6" style="width: max-content;" id="carousel-list"></div>
         </div>
 
@@ -204,8 +294,8 @@ async function loadWorkoutPreview(filename) {
 
 function loadOptions() {
   app.innerHTML = `
-    <div class="p-4 max-w-4xl mx-auto text-center flex flex-col">
-      <div class="flex justify-between items-center mb-4">
+    <div class="p-4 max-w-4xl mx-auto text-center flex flex-col h-full min-h-0">
+      <div class="flex justify-between items-center mb-4 flex-none">
         <button id="back-btn" class="text-light text-lg underline" aria-label="Back">
         Back
         </button>
@@ -213,7 +303,7 @@ function loadOptions() {
         <div class="w-20"></div>
       </div>
 
-      <div class="space-y-10 pb-2">
+      <div class="flex-1 min-h-0 overflow-y-auto space-y-10 pb-6">
         <!-- Rest Duration -->
         <div class="bg-primary/30 rounded-3xl p-4 shadow-xl">
           <h2 class="text-2xl font-bold mb-4">Rest Between Exercises</h2>
@@ -311,23 +401,8 @@ function loadOptions() {
 
   history.pushState({ view: 'options' }, '', '#options');
 
-  // Light palette map for selectable accents (must be defined before applyTheme runs)
-  const LIGHT_THEME_PALETTES = {
-    '#16a34a': { accent: '#16a34a', bg: '#f0fdf4', primary: '#dcfce7', light: '#0f172a' }, // Green
-    '#3b82f6': { accent: '#2563eb', bg: '#eff6ff', primary: '#dbeafe', light: '#1e3a8a' }, // Blue
-    '#f43f5e': { accent: '#f43f5e', bg: '#fff1f2', primary: '#ffe4ec', light: '#581c2e' }, // Rose
-    '#10b981': { accent: '#059669', bg: '#ecfdf5', primary: '#d1fae5', light: '#064e3b' }, // Emerald
-    '#f59e0b': { accent: '#d97706', bg: '#fff7ed', primary: '#ffedd5', light: '#78350f' }, // Amber
-    '#6366f1': { accent: '#4c1d95', bg: '#eef2ff', primary: '#e0e7ff', light: '#312e81' }, // Indigo
-    '#14b8a6': { accent: '#0d9488', bg: '#ecfeff', primary: '#ccfbf1', light: '#0f766e' }  // Teal
-  };
-  const DEFAULT_DARK_PALETTE = { accent: '#16a34a', bg: '#07140d', primary: '#0f3d1a', light: '#c7f9d0' };
-  const DEFAULT_LIGHT_PALETTE = LIGHT_THEME_PALETTES['#16a34a'];
-
   // === Settings Persistence & Wiring ===
-  const SETTINGS_KEY = 'workoutPowerSettings';
-  const saved = localStorage.getItem(SETTINGS_KEY);
-  let settings = saved ? JSON.parse(saved) : {};
+  let settings = loadSettings();
 
   // Elements
   const restSlider = document.getElementById('rest-duration-slider');
@@ -419,41 +494,6 @@ function loadOptions() {
   // Back button event
   document.getElementById('back-btn').addEventListener('click', () => window.WorkoutApp.goBackFromOptions());
 
-  function applyPalette(palette) {
-    const root = document.documentElement;
-    if (!palette) return;
-    root.style.setProperty('--color-bg', palette.bg);
-    root.style.setProperty('--color-primary', palette.primary);
-    root.style.setProperty('--color-light', palette.light);
-    root.style.setProperty('--color-accent', palette.accent);
-  }
-
-  function getLightPalette(color) {
-    if (!color) return DEFAULT_LIGHT_PALETTE;
-    const normalized = color.trim().toLowerCase();
-    return LIGHT_THEME_PALETTES[normalized] || DEFAULT_LIGHT_PALETTE;
-  }
-
-  // ApplyTheme function: sets data-theme and swaps accent variable for light theme
-  function applyTheme(theme, lightColor) {
-    const root = document.documentElement;
-    if (!theme || theme === 'system') {
-      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-      if (prefersDark) {
-        root.setAttribute('data-theme', 'dark');
-        applyPalette(DEFAULT_DARK_PALETTE);
-      } else {
-        root.setAttribute('data-theme', 'light');
-        applyPalette(getLightPalette(lightColor));
-      }
-    } else if (theme === 'dark') {
-      root.setAttribute('data-theme', 'dark');
-      applyPalette(DEFAULT_DARK_PALETTE);
-    } else if (theme === 'light') {
-      root.setAttribute('data-theme', 'light');
-      applyPalette(getLightPalette(lightColor));
-    }
-  }
 }
 
 // Placeholder timer (we'll replace this tomorrow)
@@ -495,6 +535,7 @@ window.WorkoutApp.loadWorkoutList = loadWorkoutList;
 window.WorkoutApp.goBackFromOptions = goBackFromOptions;
 
 // Initial load
+applyThemeFromStorage();
 window.WorkoutApp.loadWorkoutList();
 
 // Service worker
