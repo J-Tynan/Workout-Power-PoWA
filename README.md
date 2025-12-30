@@ -81,3 +81,5 @@ Then open `http://localhost:5173`.
 - Tailwind via CDN (colors driven by CSS variables)
 - Web APIs: Service Worker, Web Speech, Web Audio, Screen Wake Lock (when available)
 
+## License
+MIT License — free to use, modify, and share.
