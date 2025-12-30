@@ -1349,7 +1349,7 @@ function launchFirework(container) {
       // Mid: arc/curve
       { transform: `translate(-50%, -50%) translate(${curveX - startX}px, ${curveY - startY}px) scaleX(0.18) scaleY(2.0)`, opacity: 1, offset: 0.55 },
       // Near end: becomes a bright dot right before explosion
-      { transform: `translate(-50%, -50%) translate(${finalX - startX}px, ${finalY - startY}px) scale(1.02)`, opacity: 0.95, offset: 0.86 },
+      { transform: `translate(-50%, -50%) translate(${finalX - startX}px, ${finalY - startY}px) scale(1.02)`, opacity: 0.95, offset: 0.92 },
       // Fade out quickly to avoid a noticeable "hang" before the explosion flash
       { transform: `translate(-50%, -50%) translate(${finalX - startX}px, ${finalY - startY}px) scale(0.78)`, opacity: 0.18 }
     ],
@@ -1393,8 +1393,8 @@ function startFireworksCelebration(_anchorEl, durationMs = 10000) {
   };
 
   launch();
-  window.setTimeout(launch, 220);
-  window.setTimeout(launch, 460);
+  // Start with two rockets total: one now, one shortly after.
+  window.setTimeout(launch, 180);
   const launchId = window.setInterval(launch, 900);
 
   const stop = () => {
