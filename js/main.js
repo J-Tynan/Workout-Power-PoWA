@@ -1,6 +1,7 @@
 // Main app entry point
 import { startNextCelebration, prefersReducedMotion } from './celebrations.js';
 import { applyTheme, applyThemeFromSettings, registerSystemThemeChangeListener, DEFAULT_LIGHT_COLOR } from './theme.js';
+import { createOptions } from './options.js';
 import { createUi } from './ui.js';
 
 const app = document.getElementById('app');
@@ -15,6 +16,8 @@ let wakeLockLastError = null;
 
 let timerTickId = null;
 let timerState = null;
+
+let loadOptions;
 
 function stopActiveTimer() {
   if (timerTickId) {
@@ -207,7 +210,7 @@ function setWakeLockWanted(nextWanted) {
 }
 
 // UI module wiring
-const { loadWorkoutList, loadWorkoutPreview, loadOptions } = createUi({
+const { loadWorkoutList, loadWorkoutPreview } = createUi({
   app,
   loadSettings,
   stopActiveTimer,
@@ -219,11 +222,24 @@ const { loadWorkoutList, loadWorkoutPreview, loadOptions } = createUi({
   getCurrentWorkout: () => currentWorkout,
   getCurrentFilename: () => currentFilename,
   startTimer,
+  loadOptions: () => loadOptions()
+});
+
+({ loadOptions } = createOptions({
+  app,
+  loadSettings,
   applyTheme,
   DEFAULT_LIGHT_COLOR,
   startNextCelebration,
-  prefersReducedMotion
-});
+  prefersReducedMotion,
+  loadWorkoutPreview,
+  loadWorkoutList,
+  getCurrentWorkout: () => currentWorkout,
+  getCurrentFilename: () => currentFilename,
+  stopActiveTimer,
+  setWakeLockWanted,
+  settingsKey: SETTINGS_KEY
+}));
 
 // Namespace for global functions
 window.WorkoutApp = {};
