@@ -143,6 +143,7 @@ function createOptions({
 		history.pushState({ view: 'options' }, '', '#options');
 
 		let settings = loadSettings();
+		let userSetTheme = settings.userSetTheme === true;
 
 		const restSlider = document.getElementById('rest-duration-slider');
 		const restValue = document.getElementById('rest-duration-value');
@@ -184,7 +185,8 @@ function createOptions({
 
 		applyTheme(defaultTheme, defaultLightColor);
 
-		function saveSettings() {
+		function saveSettings(themeChanged = false) {
+			if (themeChanged) userSetTheme = true;
 			const current = {
 				restDuration: parseInt(restSlider.value),
 				preWorkoutSeconds: parseInt(preworkoutSlider.value),
@@ -197,7 +199,8 @@ function createOptions({
 				vibration: document.getElementById('toggle-vibration').checked,
 				wakelock: document.getElementById('toggle-wakelock').checked,
 				sounds: document.getElementById('toggle-sounds').checked,
-				celebrations: document.getElementById('toggle-celebrations').checked
+				celebrations: document.getElementById('toggle-celebrations').checked,
+				userSetTheme
 			};
 			localStorage.setItem(settingsKey, JSON.stringify(current));
 			settings = current;
@@ -225,7 +228,7 @@ function createOptions({
 				const theme = themeSelector.value;
 				const lightColor = lightColorSelect ? lightColorSelect.value : null;
 				applyTheme(theme, lightColor);
-				saveSettings();
+				saveSettings(true);
 			});
 		}
 		if (lightColorSelect) {
@@ -233,7 +236,7 @@ function createOptions({
 				const theme = themeSelector ? themeSelector.value : 'system';
 				const lightColor = lightColorSelect.value;
 				applyTheme(theme, lightColor);
-				saveSettings();
+				saveSettings(true);
 			});
 		}
 		['celebrations', 'vibration', 'wakelock', 'sounds'].forEach(id => {

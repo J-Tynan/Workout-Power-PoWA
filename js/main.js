@@ -34,8 +34,9 @@ function loadSettings() {
   }
 
   let changed = false;
-  if (!settings.theme) {
+  if (settings.userSetTheme !== true) {
     settings.theme = 'system';
+    settings.userSetTheme = false;
     changed = true;
   }
   if (!settings.lightColor) {
