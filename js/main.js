@@ -1138,6 +1138,10 @@ let celebrationIndex = 0;
 
 // Celebration tuning (dev-friendly constants)
 const CONFETTI_BURST_INTERVAL_MS = 900;
+const FIREWORK_DOUBLE_SHOT_CHANCE = 0.45;
+const FIREWORK_DOUBLE_SHOT_MIN_GAP_MS = 140;
+const FIREWORK_DOUBLE_SHOT_MAX_GAP_MS = 320;
+const FIREWORK_SPARKLE_CHANCE = 0.4;
 
 function getAnchorCenter(anchorEl) {
   const rect = anchorEl.getBoundingClientRect();
@@ -1276,6 +1280,31 @@ function spawnFireworkExplosion(container, x, y) {
     { duration: 180, easing: 'ease-out', fill: 'forwards' }
   );
   flashAnim.addEventListener('finish', () => flash.remove());
+
+  // Optional sparkle pop: brief HDR-bright flicker to add shimmer.
+  if (Math.random() < FIREWORK_SPARKLE_CHANCE) {
+    const sparkle = document.createElement('div');
+    sparkle.style.position = 'absolute';
+    sparkle.style.left = `${x}px`;
+    sparkle.style.top = `${y}px`;
+    sparkle.style.width = '28px';
+    sparkle.style.height = '28px';
+    sparkle.style.transform = 'translate(-50%, -50%)';
+    sparkle.style.background = 'radial-gradient(circle at 50% 50%, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.3) 45%, rgba(255,255,255,0) 70%)';
+    sparkle.style.filter = 'brightness(2.6) saturate(1.9)';
+    sparkle.style.mixBlendMode = 'screen';
+    container.appendChild(sparkle);
+
+    const sparkleAnim = sparkle.animate(
+      [
+        { transform: 'translate(-50%, -50%) scale(0.85)', opacity: 0.95 },
+        { transform: 'translate(-50%, -50%) scale(1.25)', opacity: 0.55, offset: 0.35 },
+        { transform: 'translate(-50%, -50%) scale(0.9)', opacity: 0 }
+      ],
+      { duration: 240 + Math.random() * 120, easing: 'cubic-bezier(0.3, 0.7, 0.4, 1)', fill: 'forwards' }
+    );
+    sparkleAnim.addEventListener('finish', () => sparkle.remove());
+  }
 
   // Trails removed per request; only flash + particle burst remain.
 
@@ -1458,7 +1487,16 @@ function startFireworksCelebration(_anchorEl, durationMs = 10000) {
       stop();
       return;
     }
+    const doubleShot = Math.random() < FIREWORK_DOUBLE_SHOT_CHANCE;
     launchFirework(container);
+    if (doubleShot) {
+      const gap = FIREWORK_DOUBLE_SHOT_MIN_GAP_MS + Math.random() * (FIREWORK_DOUBLE_SHOT_MAX_GAP_MS - FIREWORK_DOUBLE_SHOT_MIN_GAP_MS);
+      window.setTimeout(() => {
+        if (!stopped) {
+          launchFirework(container);
+        }
+      }, gap);
+    }
   };
 
   launch();
