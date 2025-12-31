@@ -1277,38 +1277,7 @@ function spawnFireworkExplosion(container, x, y) {
   );
   flashAnim.addEventListener('finish', () => flash.remove());
 
-  // Light trails that briefly streak out from the blast point.
-  const trailCount = 3 + Math.floor(Math.random() * 4);
-  for (let t = 0; t < trailCount; t++) {
-    const trail = document.createElement('div');
-    trail.style.position = 'absolute';
-    trail.style.left = `${x}px`;
-    trail.style.top = `${y}px`;
-    trail.style.width = '2px';
-    trail.style.height = '26px';
-    trail.style.borderRadius = '9999px';
-    trail.style.transform = 'translate(-50%, -50%)';
-    const hdr = Math.random() < 0.35;
-    trail.style.background = hdr ? 'rgba(255,255,255,0.95)' : 'rgba(255,255,255,0.6)';
-    trail.style.filter = hdr ? 'brightness(2.4) saturate(1.8)' : 'brightness(1.5)';
-    trail.style.boxShadow = hdr ? '0 0 24px rgba(255,255,255,0.9)' : '0 0 12px rgba(255,255,255,0.5)';
-    trail.style.mixBlendMode = 'screen';
-    container.appendChild(trail);
-
-    const theta = Math.random() * Math.PI * 2;
-    const dist = 72 + Math.random() * 140;
-    const wobble = (Math.random() * 18) - 9;
-    const dx = Math.cos(theta) * (dist + wobble);
-    const dy = Math.sin(theta) * (dist + wobble);
-    const anim = trail.animate(
-      [
-        { transform: 'translate(-50%, -50%) scaleY(1)', opacity: 1 },
-        { transform: `translate(-50%, -50%) translate(${dx}px, ${dy}px) scaleY(0.8)`, opacity: hdr ? 0.18 : 0.14 }
-      ],
-      { duration: 420 + Math.random() * 180, easing: 'ease-out', fill: 'forwards' }
-    );
-    anim.addEventListener('finish', () => trail.remove());
-  }
+  // Trails removed per request; only flash + particle burst remain.
 
   const particleCount = 46 + Math.floor(Math.random() * 22);
   for (let i = 0; i < particleCount; i++) {
@@ -1430,6 +1399,14 @@ function launchFirework(container) {
   emberIntervalId = window.setInterval(spawnEmber, 28 + Math.random() * 18);
 
   const duration = 700 + Math.random() * 520;
+  const explodeLeadMs = 160;
+
+  // Stop the fiery tail shortly before the explosion for a cleaner burst transition.
+  const trailCutoffMs = Math.max(0, duration - explodeLeadMs - 90);
+  const trailCutoffId = window.setTimeout(() => {
+    stopTrail();
+  }, trailCutoffMs);
+
   const anim = rocket.animate(
     [
       // Start: looks like a small streak
@@ -1446,10 +1423,10 @@ function launchFirework(container) {
 
   // Trigger the explosion a touch before the animation ends so it doesn't linger.
   let exploded = false;
-  const explodeLeadMs = 160;
   const explodeTimerId = window.setTimeout(() => {
     if (exploded) return;
     exploded = true;
+    window.clearTimeout(trailCutoffId);
     stopTrail();
     rocket.remove();
     spawnFireworkExplosion(container, finalX, finalY);
@@ -1457,6 +1434,7 @@ function launchFirework(container) {
 
   anim.addEventListener('finish', () => {
     window.clearTimeout(explodeTimerId);
+    window.clearTimeout(trailCutoffId);
     if (exploded) return;
     exploded = true;
     stopTrail();
