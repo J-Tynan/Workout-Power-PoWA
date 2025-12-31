@@ -1189,18 +1189,17 @@ function spawnConfettiBurst(container, originX, originY, pieceCount = 70) {
     piece.style.transform = 'translate(-50%, -50%)';
     container.appendChild(piece);
 
-    // Floaty confetti: small upward pop, then slow fall with gentle sway.
-    // Constrain angles mostly upwards so it doesn't look like it's being thrown at the screen.
-    const angle = (-Math.PI / 2) + (Math.random() * 1.7 - 0.85);
-    const velocity = 95 + Math.random() * 170;
+    // Floaty confetti: small pop with a wider outward spray, then slow fall with gentle sway.
+    const angle = (Math.PI * 2) * Math.random();
+    const velocity = 140 + Math.random() * 220;
 
     // Add a little left/right randomness during the initial upward motion.
     const popXBase = Math.cos(angle) * velocity;
     const launchJitterX = (Math.random() * 2 - 1) * (28 + Math.random() * 54);
     const popX = popXBase + launchJitterX;
 
-    const popY = Math.sin(angle) * velocity - (170 + Math.random() * 260);
-    const driftX = (Math.random() * 2 - 1) * (220 + Math.random() * 340);
+    const popY = Math.sin(angle) * velocity - (130 + Math.random() * 200);
+    const driftX = (Math.random() * 2 - 1) * (260 + Math.random() * 420);
     const fallY = 700 + Math.random() * 520;
     const sway = (Math.random() * 2 - 1) * (48 + Math.random() * 64);
     const rotate = (Math.random() * 540 - 270);
@@ -1284,6 +1283,38 @@ function spawnFireworkExplosion(container, x, y) {
     { duration: 180, easing: 'ease-out', fill: 'forwards' }
   );
   flashAnim.addEventListener('finish', () => flash.remove());
+
+  // Light trails that briefly streak out from the blast point.
+  const trailCount = 3 + Math.floor(Math.random() * 4);
+  for (let t = 0; t < trailCount; t++) {
+    const trail = document.createElement('div');
+    trail.style.position = 'absolute';
+    trail.style.left = `${x}px`;
+    trail.style.top = `${y}px`;
+    trail.style.width = '2px';
+    trail.style.height = '24px';
+    trail.style.borderRadius = '9999px';
+    trail.style.transform = 'translate(-50%, -50%) rotate(0deg)';
+    const hdr = Math.random() < 0.35;
+    trail.style.background = hdr ? 'rgba(255,255,255,0.95)' : 'rgba(255,255,255,0.6)';
+    trail.style.filter = hdr ? 'brightness(2.4) saturate(1.8)' : 'brightness(1.5)';
+    trail.style.boxShadow = hdr ? '0 0 24px rgba(255,255,255,0.9)' : '0 0 12px rgba(255,255,255,0.5)';
+    trail.style.mixBlendMode = 'screen';
+    container.appendChild(trail);
+
+    const theta = Math.random() * Math.PI * 2;
+    const dist = 60 + Math.random() * 140;
+    const wobble = (Math.random() * 22) - 11;
+    const rotateDeg = (theta * 180) / Math.PI;
+    const anim = trail.animate(
+      [
+        { transform: 'translate(-50%, -50%) rotate(0deg) scaleY(1)', opacity: 1 },
+        { transform: `translate(-50%, -50%) translate(${Math.cos(theta) * (dist + wobble)}px, ${Math.sin(theta) * (dist + wobble)}px) rotate(${rotateDeg}deg) scaleY(0.8)`, opacity: hdr ? 0.18 : 0.14 }
+      ],
+      { duration: 420 + Math.random() * 180, easing: 'ease-out', fill: 'forwards' }
+    );
+    anim.addEventListener('finish', () => trail.remove());
+  }
 
   const particleCount = 46 + Math.floor(Math.random() * 22);
   for (let i = 0; i < particleCount; i++) {
@@ -1408,7 +1439,7 @@ function startFireworksCelebration(_anchorEl, durationMs = 10000) {
   launch();
   // Start with two rockets total: one now, one shortly after.
   window.setTimeout(launch, 180);
-  const launchId = window.setInterval(launch, 1500);
+  const launchId = window.setInterval(launch, 1600);
 
   const stop = () => {
     if (stopped) return;
