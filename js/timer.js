@@ -73,7 +73,8 @@ function createTimer({
 
 		app.innerHTML = `
 			<div class="flex flex-col h-full min-h-0">
-				<div class="p-4 bg-primary/80 flex justify-between items-center">
+				<!-- Header bar: reduce p-3 on mobile to save vertical space; adjust text sizes if needed. -->
+				<div class="p-3 md:p-4 bg-primary/80 flex justify-between items-center">
 					<button id="back-to-preview-btn" class="text-lg text-light underline" aria-label="Back to Preview">← Back</button>
 					<div class="text-sm font-medium text-light/90 bg-primary/40 px-3 py-2 rounded-xl" data-wakelock-indicator aria-live="polite">Wake Lock</div>
 					<div class="text-sm text-light/90" id="tap-hint" aria-label="Tap anywhere to pause">Tap anywhere to pause</div>

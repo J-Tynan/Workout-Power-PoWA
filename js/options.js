@@ -19,7 +19,8 @@ function createOptions({
 		stopActiveTimer();
 		setWakeLockWanted(false);
 		app.innerHTML = `
-			<div class="p-4 h-full flex flex-col text-center">
+			<!-- Header padding: use p-3 on mobile to shrink the bar; raise to p-4+ for desktop if desired. -->
+			<div class="p-3 md:p-4 h-full flex flex-col text-center">
 				<div class="max-w-4xl mx-auto w-full flex justify-between items-center mb-4 flex-none">
 					<button id="back-btn" class="text-light text-lg underline" aria-label="Back">Back</button>
 					<h1 class="text-4xl md:text-5xl font-bold">Options</h1>
