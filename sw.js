@@ -3,7 +3,10 @@ const ASSETS = [
   './',
   'index.html',
   'manifest.json',
-  // Add more as we create them
+  'js/main.js',  // add all your refactored JS files
+  'data/workouts/index.json',
+  'data/workouts/classic.json',  // etc.
+  'assets/placeholder.svg'  // and future SVGs
 ];
 
 self.addEventListener('install', event => {

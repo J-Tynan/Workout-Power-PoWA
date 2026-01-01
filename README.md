@@ -84,3 +84,4 @@ Then open `http://localhost:5173`.
 ## License
 MIT License — free to use, modify, and share.
 
+Copyright (c) 2025 Joseph Tynan
