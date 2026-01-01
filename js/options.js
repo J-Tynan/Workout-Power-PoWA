@@ -28,6 +28,7 @@ function createOptions({
 
 				<div class="flex-1 min-h-0 overflow-y-auto w-full">
 					<div class="max-w-4xl mx-auto space-y-6 pb-6">
+						<!-- Tweak card widths: change max-w-2xl to max-w-xl or a fixed width (e.g., w-[320px]) to narrow cards. -->
 						<div class="bg-primary rounded-3xl p-4 shadow-xl text-left max-w-2xl mx-auto">
 						<h2 class="text-2xl font-bold mb-4 text-center">Rest Between Exercises</h2>
 						<div class="flex items-center justify-between mb-2">
