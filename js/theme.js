@@ -24,10 +24,11 @@ function isSystemDark() {
 
 function applyTheme(themeChoice = 'system', lightColor = DEFAULT_LIGHT_COLOR) {
   const theme = themeChoice || 'system';
-  const accent = theme === 'dark' ? DEFAULT_LIGHT_COLOR : (lightColor || DEFAULT_LIGHT_COLOR);
   const root = document.documentElement;
 
   const shouldUseDark = theme === 'dark' || (theme === 'system' && isSystemDark());
+  // Use the dark accent when the effective theme is dark (even if user picked a light accent).
+  const accent = shouldUseDark ? DEFAULT_LIGHT_COLOR : (lightColor || DEFAULT_LIGHT_COLOR);
   root.classList.toggle('dark', shouldUseDark);
 
   // Keep accent in RGB form for Tailwind opacity utilities
