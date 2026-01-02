@@ -137,7 +137,7 @@ function createUi({
         };
         img.setAttribute('aria-label', ex.name);
         const fallback = document.createElement('div');
-        fallback.className = 'hidden flex-col items-center justify-center text-light/70';
+        fallback.className = 'hidden w-full h-full flex-col items-center justify-center text-light/90 bg-primary/70';
         const fallbackNum = document.createElement('p');
         fallbackNum.className = 'text-4xl font-bold';
         fallbackNum.textContent = index + 1;

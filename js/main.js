@@ -254,7 +254,7 @@ window.WorkoutApp.loadWorkoutList = loadWorkoutList;
 window.WorkoutApp.goBackFromOptions = goBackFromOptions;
 
 // Initial load
-applyThemeFromSettings(loadSettings());
+applyThemeFromSettings(loadSettings);
 window.WorkoutApp.loadWorkoutList();
 
 // Service worker
