@@ -91,7 +91,7 @@ function createUi({
           <!-- Header bar: reduce p-3 for mobile, raise to p-4+ for larger screens if desired. -->
           <div class="p-3 md:p-4 bg-primary/80 flex justify-between items-center">
             <button id="back-to-menu-btn" class="text-light underline text-lg" aria-label="Back to Menu">
-              Back
+              Menu
             </button>
             <h1 class="text-xl md:text-3xl font-bold" id="workout-title"></h1>
             <button id="options-btn-preview" class="text-light underline text-lg" aria-label="Options">
