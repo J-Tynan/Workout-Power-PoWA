@@ -94,6 +94,10 @@ function updateParticle(p, now) {
 		p.vy += 300 * dt;
 		p.x += p.vx * dt;
 		p.y += p.vy * dt;
+		if (!p.explode && now - (p.lastTrail || 0) > 40) {
+			spawnTrail(p.x, p.y, p.trailColor);
+			p.lastTrail = now;
+		}
 		if (p.targetY && p.y <= p.targetY) p.explode = true;
 		if (p.vy > -30) p.explode = true;
 		p.life -= dt;
@@ -102,6 +106,10 @@ function updateParticle(p, now) {
 		p.x += p.vx * dt;
 		p.y += p.vy * dt;
 		p.life -= dt;
+	} else if (p.type === 'flash') {
+		p.life -= dt;
+		p.r += 20 * dt;
+		p.alpha = Math.max(0, p.life / p.maxLife);
 	}
 	return p.life > 0;
 }
@@ -126,6 +134,11 @@ function drawParticle(p) {
 	} else if (p.type === 'spark') {
 		const alpha = Math.max(0, p.life / p.maxLife);
 		ctx.fillStyle = applyAlpha(p.color, alpha);
+		ctx.beginPath();
+		ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+		ctx.fill();
+	} else if (p.type === 'flash') {
+		ctx.fillStyle = `rgba(255,255,255,${p.alpha * 0.9})`;
 		ctx.beginPath();
 		ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
 		ctx.fill();
@@ -207,6 +220,16 @@ function spawnExplosion(x, y, palette) {
 	const clampedY = Math.min(Math.max(y, 60), canvas.height * 0.7);
 	const count = 70 + Math.random() * 40;
 	const hang = Math.random() < 0.4 ? 0.4 : 0; // sometimes hang briefly
+	particles.push({
+		type: 'flash',
+		x: clampedX,
+		y: clampedY,
+		r: 30 + Math.random() * 25,
+		alpha: 1,
+		life: 0.18,
+		maxLife: 0.18,
+		last: performance.now()
+	});
 	for (let i = 0; i < count; i++) {
 		const angle = Math.random() * Math.PI * 2;
 		const speed = 140 + Math.random() * 260;
@@ -221,6 +244,49 @@ function spawnExplosion(x, y, palette) {
 			color,
 			life: 1.2 + Math.random() * 0.8 + hang,
 			maxLife: 1.2 + Math.random() * 0.8 + hang,
+			last: performance.now()
+		});
+		// Add a few bright highlight flecks
+		if (Math.random() < 0.12) {
+			particles.push({
+				type: 'spark',
+				x: clampedX,
+				y: clampedY,
+				vx: Math.cos(angle) * (speed * 0.6),
+				vy: Math.sin(angle) * (speed * 0.6),
+				r: 1.4,
+				color: '#FFFFFF',
+				life: 0.9,
+				maxLife: 0.9,
+				last: performance.now()
+			});
+		}
+	}
+}
+
+function spawnTrail(x, y, color) {
+	particles.push({
+		type: 'spark',
+		x,
+		y,
+		vx: (Math.random() - 0.5) * 40,
+		vy: 80 + Math.random() * 60,
+		r: 1.5 + Math.random() * 1.5,
+		color,
+		life: 0.35 + Math.random() * 0.25,
+		maxLife: 0.35 + Math.random() * 0.25,
+		last: performance.now()
+	});
+	// Tiny hot core flicker
+	if (Math.random() < 0.3) {
+		particles.push({
+			type: 'flash',
+			x,
+			y,
+			r: 3 + Math.random() * 3,
+			alpha: 1,
+			life: 0.12,
+			maxLife: 0.12,
 			last: performance.now()
 		});
 	}
