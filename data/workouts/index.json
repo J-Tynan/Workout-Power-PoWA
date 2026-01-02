@@ -6,12 +6,6 @@
     "filename": "quick-test.json"
   },
   {
-    "id": "core-focus",
-    "name": "Core Focus",
-    "description": "4-exercise core strength test circuit.",
-    "filename": "core-focus.json"
-  },
-  {
     "id": "warmup",
     "name": "Dynamic Warm-Up",
     "description": "Gentle full-body preparation.",
@@ -31,4 +25,5 @@
   }
 
 ]
+
 
