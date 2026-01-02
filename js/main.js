@@ -35,12 +35,21 @@ function loadSettings() {
 
   let changed = false;
   if (settings.userSetTheme !== true) {
-    settings.theme = 'system';
-    settings.userSetTheme = false;
+    // If a theme was previously chosen but userSetTheme flag wasn't recorded (older saves), honor it.
+    if (settings.theme) {
+      settings.userSetTheme = true;
+    } else {
+      settings.theme = 'system';
+      settings.userSetTheme = false;
+    }
     changed = true;
   }
   if (!settings.lightColor) {
     settings.lightColor = DEFAULT_LIGHT_COLOR;
+    changed = true;
+  }
+  if (typeof settings.userSetTheme !== 'boolean') {
+    settings.userSetTheme = settings.theme && settings.theme !== 'system';
     changed = true;
   }
 
