@@ -1,4 +1,4 @@
-# Workout Power
+# [WIP] Workout Power
 
 Workout Power is a lightweight, focused fitness Progressive Web App (PWA) designed to work reliably on both mobile and desktop platforms. The project prioritizes clarity, performance, and daily usability over feature bloat or visual excess.
 
@@ -118,4 +118,5 @@ MIT
 - Tailwind CSS
 - DaisyUI
 - Heroicons
+
 - Web Speech API
